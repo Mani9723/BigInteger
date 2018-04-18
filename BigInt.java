@@ -132,13 +132,7 @@ public class BigInt
         }
     }
 
-    private void removeLeadingZeros(ArrayList<Integer> numberArray)
-    {
-        int i = 0;
-        while(numberArray.get(i) == 0){
-            numberArray.remove(numberArray.get(i));
-        }
-    }
+ 
     @Override
     public String toString()
     {
@@ -146,7 +140,7 @@ public class BigInt
         StringBuilder stringBuilder = new StringBuilder();
 
         finalCheckForNegativeNumbers();
-        removeLeadingZeros(this.numberArray);
+        
 
         if(isCharged) stringBuilder.append('-');
         for (Integer aNumberArray : this.numberArray)

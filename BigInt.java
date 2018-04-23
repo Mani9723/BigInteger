@@ -3,6 +3,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 
+import java.lang.Math;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,12 +20,10 @@ public class BigInt
     public BigInt(String userValue)
     {
         String absValue = verifySignAndLength(userValue);
-        try
-        {
+        try {
             if (isInputValid(absValue))
                 this.numberArray = storeInArrayList(absValue);
-        } catch (InvalidInputException e)
-        {
+        } catch (InvalidInputException e) {
             e.getMessage();
             e.printStackTrace();
             System.exit(-1);
@@ -41,22 +40,18 @@ public class BigInt
         char signValue = value.charAt(0);
         if (value.length() == 1 && !Character.isDigit(value.charAt(0)))
             System.exit(-1);
-        else if (signValue == '+' || signValue == '-')
-        {
+        else if (signValue == '+' || signValue == '-') {
             setSign(signValue);
             return value.substring(1);
-        }
-        return value;
+        }return value;
     }
 
     private boolean isInputValid(String value) throws InvalidInputException
     {
-        for (int i = 0; i < value.length(); i++)
-        {
+        for (int i = 0; i < value.length(); i++) {
             if (!Character.isDigit(value.charAt(i)))
                 throw new InvalidInputException(value.concat(" ").concat("Contains invalid Character"));
-        }
-        return true;
+        }return true;
     }
 
     private void setSign(char signValue)
@@ -68,51 +63,99 @@ public class BigInt
     private ArrayList<Integer> storeInArrayList(String value)
     {
         ArrayList<Integer> numberArray = new ArrayList<Integer>();
-        if (isCharged)
-        {
-            for (int i = value.length() - 1; i >= 0; i--)
+        if (isCharged) {
+            for (int i = 0; i < value.length(); i++)
                 numberArray.add(Integer.parseInt(value.substring(i, i + 1)) * -1);
-        } else
-        {
-            for (int i = value.length() - 1; i >= 0; i--)
+        } else {
+            for (int i = 0; i < value.length(); i++)
                 numberArray.add(Integer.parseInt(value.substring(i, i + 1)));
-        }
-        return numberArray;
+        }return numberArray;
+    }
+    private ArrayList<Integer> negate(ArrayList<Integer> numberArray)
+    {
+        ArrayList<Integer> negatedArrayList = new ArrayList<Integer>();
+        for (int i = 0; i < numberArray.size(); i++)
+            negatedArrayList.add(numberArray.get(i) * -1);
+        return negatedArrayList;
     }
 
     public BigInt add(BigInt other)
     {
-        return new BigInt(add(this.numberArray, other.numberArray));
+        reverse(this.numberArray,other.numberArray,null);
+        BigInt f = new BigInt(add(this.numberArray, other.numberArray));
+        reverse(this.numberArray,other.numberArray,f.numberArray);
+        return f;
     }
 
+    private void reverse(ArrayList<Integer> numberArray,
+                         ArrayList<Integer> second, ArrayList<Integer> third)
+    {
+        Collections.reverse(numberArray);
+        Collections.reverse(second);
+        if(third != null) Collections.reverse(third);
+    }
     private ArrayList<Integer> add(ArrayList<Integer> addend, ArrayList<Integer> auguend)
     {
-        int carry = 0;
+        int carry = 0, tempSum;
         if (addend.size() != auguend.size()) compareArrayList(addend, auguend);
         ArrayList<Integer> sum = new ArrayList<Integer>();
 
         for (int i = 0; i < addend.size(); i++) {
-            int tempSum = addend.get(i) + auguend.get(i) + carry;
-            if (tempSum >= 10) {
+            tempSum = addend.get(i) + auguend.get(i) + carry;
+            if (tempSum >= 10 || tempSum <= -10) {
                 carry = tempSum / 10;
                 sum.add(tempSum % 10);
             } else {
                 sum.add(tempSum);
                 carry = 0;
             }
-        }
-        if (carry > 0)
-            sum.add(carry);
+        }if (carry > 0 || carry < 0)
+        sum.add(carry);
+
         return sum;
     }
 
-    private void compareArrayList(ArrayList<Integer> addend, ArrayList<Integer> auguend)
+    public BigInt subtract(BigInt other)
     {
-        int second = auguend.size(), first = addend.size();
-        if (addend.size() < auguend.size())
-        {
-            padWithZeros(addend, second - first);
-        } else padWithZeros(auguend, first - second);
+        reverse(this.numberArray,other.numberArray,null);
+        BigInt f = new BigInt(subtract(this.numberArray,other.numberArray));
+        reverse(this.numberArray,other.numberArray,f.numberArray);
+        return f;
+    }
+
+    private ArrayList<Integer> subtract(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
+    {
+        int borrow = 10, carry = 0, tempDiff =0, firstVal, secondVal;
+        ArrayList<Integer> difference = new ArrayList<Integer>();
+        if (minuend.size() != subtrahend.size()) compareArrayList(minuend, subtrahend);
+
+        if(minuend.size()==1 && subtrahend.size()==1) { difference.add(minuend.get(0) - subtrahend.get(0)); }
+        else if(subtrahend.get(0) < 0){ difference = add(minuend,subtrahend); }
+        else {
+            for (int i = 0; i < minuend.size(); i++) {
+                firstVal = minuend.get(i); secondVal = subtrahend.get(i);
+                if((firstVal < 0 && secondVal > 0) || secondVal < 0) {
+                    difference = add(minuend, negate(subtrahend));
+                    difference = negate(difference);
+                }
+                else if(Math.abs(firstVal) < Math.abs(secondVal)){
+                    tempDiff = (firstVal+borrow - carry) - secondVal;
+                    carry = 1;
+                }else if(firstVal<secondVal){
+                    tempDiff = (firstVal-carry) - secondVal;
+                }else
+                    tempDiff = firstVal - secondVal;
+                difference.add(tempDiff);
+            }
+        }
+        return difference;
+    }
+    private void compareArrayList(ArrayList<Integer> firstArray, ArrayList<Integer> secondArray)
+    {
+        int second = secondArray.size(), first = firstArray.size();
+        if (firstArray.size() < secondArray.size()) {
+            padWithZeros(firstArray, second - first);
+        } else padWithZeros(secondArray, first - second);
     }
 
     private void padWithZeros(ArrayList<Integer> array, int numberOfZeros)
@@ -132,29 +175,22 @@ public class BigInt
         }
     }
 
-    private void removeLeadingZeros(ArrayList<Integer> numberArray)
-    {
-        int i = 0;
-        while(numberArray.get(i) == 0){
-            numberArray.remove(numberArray.get(i));
-        }
-    }
     @Override
     public String toString()
     {
-        Collections.reverse(this.numberArray);
         StringBuilder stringBuilder = new StringBuilder();
-
         finalCheckForNegativeNumbers();
-        removeLeadingZeros(this.numberArray);
 
         if(isCharged) stringBuilder.append('-');
+
         for (Integer aNumberArray : this.numberArray)
             stringBuilder.append(Math.abs(aNumberArray));
 
-        if(stringBuilder.length()==1 && stringBuilder.charAt(0) == '0')
-            return stringBuilder.toString();
+        String finalString = stringBuilder.toString();
 
-        return stringBuilder.toString().replaceFirst("^[0]+", "");
+        if(stringBuilder.toString().matches("^[0]+$"))
+            return finalString.substring(0,1);
+
+        return finalString.replaceFirst("^[0]+", "");
     }
 }

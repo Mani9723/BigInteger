@@ -1,6 +1,5 @@
 package RevisedBigInt;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -274,10 +273,10 @@ public void testSubtractSingleDigitsv4()
 	@Test
 	public void testSubtractThree()
 	{
-		b1 = new BigInt("-19");
-		b2 = new BigInt("-1");
+		b1 = new BigInt("-18");
+		b2 = new BigInt("-9");
 		b3 = b1.subtract(b2);
-		assertEquals("-18",b3.toString());
+		assertEquals("-9",b3.toString());
 	}
 	@Test
 	public void testSubtractFour()
@@ -335,6 +334,40 @@ public void testSubtractSingleDigitsv4()
 		b2 = new BigInt("-100");
 		b3 = b1.subtract(b2);
 		assertEquals("200",b3.toString());
+	}
+
+	@Test
+	public void testSubtractEleven()
+	{
+		b1 = new BigInt("8888888888888");
+		b2 = new BigInt("7999999999999");
+		b3 = b1.subtract(b2);
+		assertEquals("888888888889",b3.toString());
+	}
+	@Test
+	public void testSubtractTwelve()
+	{
+		b1 = new BigInt("8888888888888");
+		b2 = new BigInt("-7999999999999");
+		b3 = b1.subtract(b2);
+		assertEquals("16888888888887",b3.toString());
+	}
+
+	@Test
+	public void testSubtractThirteen()
+	{
+		b1 = new BigInt("-8888888888888");
+		b2 = new BigInt("-7999999999999");
+		b3 = b1.subtract(b2);
+		assertEquals("-888888888889",b3.toString());
+	}
+	@Test
+	public void testSubtractFourteen()
+	{
+		b1 = new BigInt("-8888888888888");
+		b2 = new BigInt("7999999999999");
+		b3 = b1.subtract(b2);
+		assertEquals("-16888888888887",b3.toString());
 	}
 
 

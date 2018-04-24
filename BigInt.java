@@ -4,8 +4,6 @@ package RevisedBigInt;
 import RevisedBigInt.Exceptions.InvalidInputException;
 
 import java.lang.Math;
-import java.lang.reflect.Array;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -15,10 +13,10 @@ import java.lang.StringBuilder;
 public class BigInt
 {
 
-	private ArrayList<Integer> numberArray = new ArrayList<Integer>();
+	private ArrayList<Integer> numberArray = new ArrayList<>();
 	private boolean isCharged = false;
 
-	public BigInt(String userValue)
+	BigInt(String userValue)
 	{
 		String absValue = verifySignAndLength(userValue);
 		try {
@@ -51,7 +49,8 @@ public class BigInt
 	{
 		for (int i = 0; i < value.length(); i++) {
 			if (!Character.isDigit(value.charAt(i)))
-				throw new InvalidInputException(value.concat(" ").concat("Contains invalid Character"));
+				throw new InvalidInputException(value.concat(" ")
+						.concat("Contains invalid Character"));
 		}return true;
 	}
 
@@ -63,7 +62,7 @@ public class BigInt
 
 	private ArrayList<Integer> storeInArrayList(String value)
 	{
-		ArrayList<Integer> numberArray = new ArrayList<Integer>();
+		ArrayList<Integer> numberArray = new ArrayList<>();
 		if (isCharged) {
 			for (int i = 0; i < value.length(); i++)
 				numberArray.add(Integer.parseInt(value.substring(i, i + 1)) * -1);
@@ -73,7 +72,7 @@ public class BigInt
 		}return numberArray;
 	}
 
-	public BigInt add(BigInt other)
+	BigInt add(BigInt other)
 	{
 		reverse(this.numberArray,other.numberArray,null);
 		BigInt f = new BigInt(add(this.numberArray, other.numberArray));
@@ -81,18 +80,20 @@ public class BigInt
 		return f;
 	}
 
-	private void reverse(ArrayList<Integer> numberArray, ArrayList<Integer> second, ArrayList<Integer> third)
+	private void reverse(ArrayList<Integer> numberArray,
+	                     ArrayList<Integer> second, ArrayList<Integer> third)
 	{
 		Collections.reverse(numberArray);
 		Collections.reverse(second);
 		if(third != null) Collections.reverse(third);
 	}
 
-	private ArrayList<Integer> add(ArrayList<Integer> addend, ArrayList<Integer> auguend)
+	private ArrayList<Integer> add(ArrayList<Integer> addend,
+	                               ArrayList<Integer> auguend)
 	{
 		int carry = 0, tempSum;
-		if (addend.size() != auguend.size()) compareArrayList(addend, auguend);
 		ArrayList<Integer> sum = new ArrayList<>();
+		compareArrayList(addend, auguend);
 
 		for (int i = 0; i < addend.size(); i++) {
 			tempSum = addend.get(i) + auguend.get(i) + carry;
@@ -109,7 +110,7 @@ public class BigInt
 		return sum;
 	}
 
-	public BigInt subtract(BigInt other)
+	BigInt subtract(BigInt other)
 	{
 		reverse(this.numberArray,other.numberArray,null);
 		BigInt f = new BigInt(subtract(this.numberArray,other.numberArray));
@@ -117,48 +118,62 @@ public class BigInt
 		return f;
 	}
 
-	private ArrayList<Integer> subtract(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
+	private ArrayList<Integer> subtract(ArrayList<Integer> minuend,
+	                                    ArrayList<Integer> subtrahend)
 	{
-		int borrow = 10, carry = 0, tempDiff;
 		int firstSize = minuend.size(), secondSize = subtrahend.size();
-		int fCurrVal, sCurrVal;
 		ArrayList<Integer> difference = new ArrayList<>();
 
-		if (firstSize != secondSize) compareArrayList(minuend, subtrahend);
-		if(firstSize==1 && secondSize==1) difference.add(minuend.get(0) - subtrahend.get(0));
+		compareArrayList(minuend, subtrahend);
 
-		else if(minuend.get(0) >= 0 && subtrahend.get(0) >= 0 ){
-			for (int i = 0; i < minuend.size(); i++) {
-				fCurrVal = minuend.get(i);
-				sCurrVal = subtrahend.get(i);
-				if(fCurrVal < sCurrVal){
-					tempDiff = ((fCurrVal+borrow)-carry) - sCurrVal;
-					carry = 1;
-				}else {
-					tempDiff = (fCurrVal - carry) - sCurrVal;
-					carry = 0;
-				}
-				difference.add(tempDiff);
-			}
-		} else {
+		if(firstSize==1 && secondSize==1)
+			difference.add(minuend.get(0) - subtrahend.get(0));
+		else if(minuend.get(0) >= 0 && subtrahend.get(0) >= 0)
+			difference = subtractWithBorrow(minuend,subtrahend);
+		else if(minuend.get(0) <= 0 && subtrahend.get(0) <= 0)
+			difference = negate(subtractWithBorrow(negate(minuend),negate(subtrahend)));
+		 else
 			difference = subtractByAdding(minuend,subtrahend);
-		}
+
 		return difference;
 	}
-	private ArrayList<Integer> subtractByAdding(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
+
+	private ArrayList<Integer> subtractWithBorrow(ArrayList<Integer> minuend,
+	                                              ArrayList<Integer> subtrahend)
+	{
+		ArrayList<Integer> difference = new ArrayList<>();
+		int fCurrVal, sCurrVal, tempDiff,borrow = 10,carry = 0;
+		for (int i = 0; i < minuend.size(); i++) {
+			fCurrVal = minuend.get(i);
+			sCurrVal = subtrahend.get(i);
+			if(fCurrVal < sCurrVal){
+				tempDiff = ((fCurrVal+borrow)-carry) - sCurrVal;
+				carry = 1;
+			}else {
+				tempDiff = (fCurrVal - carry) - sCurrVal;
+				carry = 0;
+			}
+			difference.add(tempDiff);
+		}if(difference.get(difference.size()-1) == 0)
+			difference.remove(difference.size()-1);
+		return difference;
+	}
+
+	private ArrayList<Integer> subtractByAdding(ArrayList<Integer> minuend,
+	                                            ArrayList<Integer> subtrahend)
 	{
 		int firstArrayValue = minuend.get(0), secondArrayValue = subtrahend.get(0);
 		ArrayList<Integer> difference = new ArrayList<>();
 
 		if(firstArrayValue >= 0 && secondArrayValue <= 0 )
 			difference = add(minuend,negate(subtrahend));
-		else if(firstArrayValue <= 0 && secondArrayValue <= 0)
-			difference = add(minuend,negate(subtrahend));
 		else if(firstArrayValue <= 0)
 			difference = negate(add(negate(minuend),subtrahend));
 		return difference;
 	}
-	private void compareArrayList(ArrayList<Integer> firstArray, ArrayList<Integer> secondArray)
+
+	private void compareArrayList(ArrayList<Integer> firstArray,
+	                              ArrayList<Integer> secondArray)
 	{
 		int second = secondArray.size(), first = firstArray.size();
 		if (firstArray.size() < secondArray.size()) {
@@ -172,17 +187,20 @@ public class BigInt
 		for (int i = 0; i < numberOfZeros; i++)
 			array.add(lastPos, 0);
 	}
+
 	private ArrayList<Integer> negate(ArrayList<Integer> numberArray)
 	{
 		ArrayList<Integer> negatedArray = new ArrayList<>();
-		for (int i = 0; i < numberArray.size(); i++) {
-			 negatedArray.add(numberArray.get(i)*-1);
-		}return negatedArray;
+		for (Integer aNumberArray : numberArray) {
+			negatedArray.add(aNumberArray * -1);
+		}
+		return negatedArray;
 	}
+
 	private void finalCheckForNegativeNumbers()
 	{
-		for (int i = 0; i < this.numberArray.size(); i++){
-			if (this.numberArray.get(i) < 0) {
+		for (Integer aNumberArray : this.numberArray) {
+			if (aNumberArray < 0) {
 				isCharged = true;
 				break;
 			}
@@ -194,7 +212,6 @@ public class BigInt
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		finalCheckForNegativeNumbers();
-
 		if(isCharged) stringBuilder.append('-');
 
 		for (Integer aNumberArray : this.numberArray)
@@ -203,8 +220,9 @@ public class BigInt
 		String finalString = stringBuilder.toString();
 
 		if(finalString.matches("^[0]+$"))
-			return finalString.substring(0,1);
-
-		return finalString.replaceFirst("^[0]+", "");
+			finalString = finalString.substring(0,1);
+		else
+			finalString = finalString.replaceFirst("^0*", "");
+		return finalString;
 	}
 }

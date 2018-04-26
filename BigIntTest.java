@@ -1,5 +1,7 @@
 package RevisedBigInt;
 
+
+import RevisedBigInt.Exceptions.InvalidInputException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -330,10 +332,11 @@ public void testSubtractSingleDigitsv4()
 	@Test
 	public void testSubtractTen()
 	{
+		// A - (-B) = A + B
 		b1 = new BigInt("100");
-		b2 = new BigInt("-100");
+		b2 = new BigInt("-101");
 		b3 = b1.subtract(b2);
-		assertEquals("200",b3.toString());
+		assertEquals("201",b3.toString());
 	}
 
 	@Test
@@ -370,6 +373,13 @@ public void testSubtractSingleDigitsv4()
 		assertEquals("-16888888888887",b3.toString());
 	}
 
-
+	@Test
+	public void testFinalSubtract()
+	{
+		b1 = new BigInt("000");
+		b2 = new BigInt("-100");
+		b3 = b1.subtract(b2);
+		assertEquals("100",b3.toString());
+	}
 
 }

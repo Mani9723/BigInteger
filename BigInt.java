@@ -1,8 +1,6 @@
 package RevisedBigInt;
 
-
 import RevisedBigInt.Exceptions.InvalidInputException;
-
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,7 +91,7 @@ public class BigInt
 	{
 		int carry = 0, tempSum;
 		ArrayList<Integer> sum = new ArrayList<>();
-		compareArrayList(addend, auguend);
+		compareAndPadArrayList(addend, auguend);
 
 		for (int i = 0; i < addend.size(); i++) {
 			tempSum = addend.get(i) + auguend.get(i) + carry;
@@ -112,68 +110,66 @@ public class BigInt
 
 	BigInt subtract(BigInt other)
 	{
+		BigInt difference;
 		reverse(this.numberArray,other.numberArray,null);
-		BigInt f = new BigInt(subtract(this.numberArray,other.numberArray));
-		reverse(this.numberArray,other.numberArray,f.numberArray);
-		return f;
+		difference = new BigInt(subtractionByCases(other));
+		reverse(this.numberArray,other.numberArray,difference.numberArray);
+		return difference;
 	}
 
-	private ArrayList<Integer> subtract(ArrayList<Integer> minuend,
-	                                    ArrayList<Integer> subtrahend)
+	private ArrayList<Integer> subtractionByCases(BigInt other)
 	{
-		int firstSize = minuend.size(), secondSize = subtrahend.size();
-		ArrayList<Integer> difference = new ArrayList<>();
-
-		compareArrayList(minuend, subtrahend);
-
-		if(firstSize==1 && secondSize==1)
-			difference.add(minuend.get(0) - subtrahend.get(0));
-		else if(minuend.get(0) >= 0 && subtrahend.get(0) >= 0)
-			difference = subtractWithBorrow(minuend,subtrahend);
-		else if(minuend.get(0) <= 0 && subtrahend.get(0) <= 0)
-			difference = negate(subtractWithBorrow(negate(minuend),negate(subtrahend)));
-		 else
-			difference = subtractByAdding(minuend,subtrahend);
-
-		return difference;
+		ArrayList<Integer> answer = new ArrayList<>();
+		if(this.numberArray.size() == 1 && other.numberArray.size() == 1){
+			answer.add(this.numberArray.get(0) - other.numberArray.get(0));
+		}
+		//  A.size = B.size || A - B
+		// Go ahead and do normal subtraction
+		else if(!this.isCharged && !other.isCharged) {
+			answer = subtractWithBorrow(this.numberArray, other.numberArray);
+		}
+		// A - (-B) = A + B
+		// First make B positive then add then together
+		else if(!this.isCharged ) {
+			answer = add(this.numberArray, negate(other.numberArray));
+		}
+		// -A - (-B) = -A + B = B - A
+		// Make B positive and keep A the same the subtract
+		else if( other.isCharged) {
+			answer = negate(subtractWithBorrow(negate(this.numberArray), negate(other.numberArray)));
+		}
+		// -A - B
+		else  {
+			answer = negate(add(negate(this.numberArray), other.numberArray));
+		}
+		return answer;
 	}
 
 	private ArrayList<Integer> subtractWithBorrow(ArrayList<Integer> minuend,
 	                                              ArrayList<Integer> subtrahend)
 	{
+		compareAndPadArrayList(minuend,subtrahend);
 		ArrayList<Integer> difference = new ArrayList<>();
-		int fCurrVal, sCurrVal, tempDiff,borrow = 10,carry = 0;
+		int tempSum, borrow = 0;
+
 		for (int i = 0; i < minuend.size(); i++) {
-			fCurrVal = minuend.get(i);
-			sCurrVal = subtrahend.get(i);
-			if(fCurrVal < sCurrVal){
-				tempDiff = ((fCurrVal+borrow)-carry) - sCurrVal;
-				carry = 1;
-			}else {
-				tempDiff = (fCurrVal - carry) - sCurrVal;
-				carry = 0;
+			tempSum = (minuend.get(i) - borrow) - subtrahend.get(i);
+			if (tempSum < 0) {
+				difference.add(tempSum + 10);
+				borrow = 1;
+			} else {
+				difference.add(tempSum);
+				borrow = 0;
 			}
-			difference.add(tempDiff);
-		}if(difference.get(difference.size()-1) == 0)
+		}
+		if(difference.get(difference.size()-1) == 0)
 			difference.remove(difference.size()-1);
+
 		return difference;
 	}
 
-	private ArrayList<Integer> subtractByAdding(ArrayList<Integer> minuend,
-	                                            ArrayList<Integer> subtrahend)
-	{
-		int firstArrayValue = minuend.get(0), secondArrayValue = subtrahend.get(0);
-		ArrayList<Integer> difference = new ArrayList<>();
-
-		if(firstArrayValue >= 0 && secondArrayValue <= 0 )
-			difference = add(minuend,negate(subtrahend));
-		else if(firstArrayValue <= 0)
-			difference = negate(add(negate(minuend),subtrahend));
-		return difference;
-	}
-
-	private void compareArrayList(ArrayList<Integer> firstArray,
-	                              ArrayList<Integer> secondArray)
+	private void compareAndPadArrayList(ArrayList<Integer> firstArray,
+	                                    ArrayList<Integer> secondArray)
 	{
 		int second = secondArray.size(), first = firstArray.size();
 		if (firstArray.size() < secondArray.size()) {
@@ -220,9 +216,8 @@ public class BigInt
 		String finalString = stringBuilder.toString();
 
 		if(finalString.matches("^[0]+$"))
-			finalString = finalString.substring(0,1);
+			return finalString.substring(0,1);
 		else
-			finalString = finalString.replaceFirst("^0*", "");
-		return finalString;
+			return finalString.replaceFirst("^0*", "");
 	}
 }

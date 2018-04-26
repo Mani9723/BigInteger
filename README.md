@@ -10,3 +10,9 @@ Then the user will be able to perform the following operations on the the string
         Division
         Modulus
  It's currently a work in progress. Hopefully I will be able to finish it soon.
+ 
+ 
+ *************UPDATE*********************
+ 
+ Addition and Subtraction are working
+ I have a JUnit4 Test file with about 45 test cases and all passes.

@@ -1,12 +1,34 @@
 package RevisedBigInt;
 
+import java.util.function.BiFunction;
+
 public class BigIntMain
 {
 	public static void main(String[] args)
 	{
-		BigInt b1;
-		BigInt b2;
-		BigInt b3;
+
+		BigInt b1,b2,b3;
+//		b1 = new BigInt("78888888888");
+//		b2 = new BigInt("69999999999");
+//		b3 = b1.subtract(b2);
+//		System.out.println(b3);
+////
+//		b1 = new BigInt("78888888888");
+//		b2 = new BigInt("-69999999999");
+//		b3 = b1.subtract(b2);
+//		System.out.println(b3);
+
+//		b1 = new BigInt("-78888888888");
+//		b2 = new BigInt("-69999999999");
+//		b3 = b1.subtract(b2);
+//		System.out.println(b3);
+
+		b1 = new BigInt("-78888888888");
+		b2 = new BigInt("69999999999");
+		b3 = b1.subtract(b2);
+		System.out.println(b3);
+
+
 		b1 = new BigInt("-0");
 		b2 = new BigInt("+0");
 		b3 = b1.add(b2);

@@ -16,6 +16,10 @@ public class BigInt
 
 	BigInt(String userValue)
 	{
+		if(userValue.matches("^[0]+$")) userValue.substring(0,1);
+
+		else userValue.replaceFirst("^0*", "");
+
 		String absValue = verifySignAndLength(userValue);
 		try {
 			if (isInputValid(absValue))
@@ -54,8 +58,7 @@ public class BigInt
 
 	private void setSign(char signValue)
 	{
-		if (signValue == '-')
-			isCharged = true;
+		if (signValue == '-') isCharged = true;
 	}
 
 	private ArrayList<Integer> storeInArrayList(String value)
@@ -70,6 +73,16 @@ public class BigInt
 		}return numberArray;
 	}
 
+	private void reverse(ArrayList<Integer> numberArray, ArrayList<Integer> second,
+	                     ArrayList<Integer> third)
+	{
+		Collections.reverse(numberArray);
+		Collections.reverse(second);
+		if(third != null) {
+			Collections.reverse(third);
+		}
+	}
+
 	BigInt add(BigInt other)
 	{
 		reverse(this.numberArray,other.numberArray,null);
@@ -78,16 +91,7 @@ public class BigInt
 		return f;
 	}
 
-	private void reverse(ArrayList<Integer> numberArray,
-	                     ArrayList<Integer> second, ArrayList<Integer> third)
-	{
-		Collections.reverse(numberArray);
-		Collections.reverse(second);
-		if(third != null) Collections.reverse(third);
-	}
-
-	private ArrayList<Integer> add(ArrayList<Integer> addend,
-	                               ArrayList<Integer> auguend)
+	private ArrayList<Integer> add(ArrayList<Integer> addend, ArrayList<Integer> auguend)
 	{
 		int carry = 0, tempSum;
 		ArrayList<Integer> sum = new ArrayList<>();
@@ -120,33 +124,25 @@ public class BigInt
 	private ArrayList<Integer> subtractionByCases(BigInt other)
 	{
 		ArrayList<Integer> answer = new ArrayList<>();
-		if(this.numberArray.size() == 1 && other.numberArray.size() == 1){
+		if(this.numberArray.size() == 1 && other.numberArray.size() == 1)
 			answer.add(this.numberArray.get(0) - other.numberArray.get(0));
-		}
-		//  A.size = B.size || A - B
-		// Go ahead and do normal subtraction
-		else if(!this.isCharged && !other.isCharged) {
+
+		else if(!this.isCharged && !other.isCharged)  //  A.size = B.size || A - B
 			answer = subtractWithBorrow(this.numberArray, other.numberArray);
-		}
-		// A - (-B) = A + B
-		// First make B positive then add then together
-		else if(!this.isCharged ) {
+
+		else if(!this.isCharged )  // A - (-B) = A + B
 			answer = add(this.numberArray, negate(other.numberArray));
-		}
-		// -A - (-B) = -A + B = B - A
-		// Make B positive and keep A the same the subtract
-		else if( other.isCharged) {
+
+		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
 			answer = negate(subtractWithBorrow(negate(this.numberArray), negate(other.numberArray)));
-		}
-		// -A - B
-		else  {
+
+		else   // -A - B = -(A + B)
 			answer = negate(add(negate(this.numberArray), other.numberArray));
-		}
+
 		return answer;
 	}
 
-	private ArrayList<Integer> subtractWithBorrow(ArrayList<Integer> minuend,
-	                                              ArrayList<Integer> subtrahend)
+	private ArrayList<Integer> subtractWithBorrow(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
 	{
 		compareAndPadArrayList(minuend,subtrahend);
 		ArrayList<Integer> difference = new ArrayList<>();
@@ -168,8 +164,72 @@ public class BigInt
 		return difference;
 	}
 
-	private void compareAndPadArrayList(ArrayList<Integer> firstArray,
-	                                    ArrayList<Integer> secondArray)
+	BigInt multiply(BigInt other)
+	{
+		BigInt product;
+		reverse(this.numberArray,other.numberArray,null);
+		product = new BigInt(multiplyByCases(this.numberArray,other.numberArray));
+		reverse(this.numberArray,other.numberArray,product.numberArray);
+		return product;
+
+	}
+
+	private ArrayList<Integer> multiplyByCases(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
+	{
+		ArrayList<Integer> product = new ArrayList<>();
+		if(multiplicand.size()==1 && multiplier.size()==1)
+			product.add(multiplicand.get(0)*multiplier.get(0));
+		else {
+			if (multiplicand.size() < multiplier.size())
+				product = actuallyMultiply(multiplier, multiplicand);
+			else
+				product = actuallyMultiply(multiplicand, multiplier);
+			if(multiplicand.get(0) <= 0 || multiplier.get(0) <= 0){
+				product = negate(product);
+			}
+		}
+		return product;
+	}
+
+	private ArrayList<Integer> actuallyMultiply(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
+	{
+		int carry = 0, tempProduct;
+		ArrayList<Integer> product = new ArrayList<>(), firstProduct = new ArrayList<>(),
+				partialSum = new ArrayList<>();
+
+		for(int i = 0 ; i < multiplier.size();i++) {
+			if(i>0) firstProduct = new ArrayList<>(addZerosToTheFront(firstProduct,i));
+			partialSum.clear();
+			for(int j = 0; j < multiplicand.size(); j++) {
+				tempProduct = Math.abs(multiplicand.get(j) * multiplier.get(i)) + carry;
+				if (tempProduct >= 10) {
+					carry = tempProduct / 10;
+					firstProduct.add(tempProduct % 10);
+				} else {
+					firstProduct.add(tempProduct);
+					carry = 0;
+				}
+			}if(carry!=0) firstProduct.add(carry); carry = 0;
+			if(i==0) {
+				product = new ArrayList<>(firstProduct);
+				firstProduct.clear();
+			} else {
+				partialSum = new ArrayList<>(product);
+				product.clear();
+				product = new ArrayList<>(add(firstProduct, partialSum));
+				firstProduct.clear();
+			}
+		}return product;
+	}
+
+	private ArrayList<Integer> addZerosToTheFront(ArrayList<Integer> firstProduct, int zeros)
+	{
+		for(int i = 0; i < zeros; i++)
+			firstProduct.add(i,0);
+		return firstProduct;
+	}
+
+	private void compareAndPadArrayList(ArrayList<Integer> firstArray, ArrayList<Integer> secondArray)
 	{
 		int second = secondArray.size(), first = firstArray.size();
 		if (firstArray.size() < secondArray.size()) {

@@ -169,7 +169,7 @@ public class BigIntTest
 		b3 = b1.add(b2);
 		assertEquals("98712364978612934000",b3.toString());
 	}
-
+///******************************************************************
 	@Test
 	public void testSubtractSingleDigits()
 	{
@@ -177,28 +177,31 @@ public class BigIntTest
 		b2 = new BigInt("2");
 		b3 = b1.subtract(b2);
 		assertEquals("-1",b3.toString());
-	}@Test
-public void testSubtractSingleDigitsV2()
-{
-	b1 = new BigInt("-1");
-	b2 = new BigInt("2");
-	b3 = b1.subtract(b2);
-	assertEquals("-3",b3.toString());
-}@Test
-public void testSubtractSingleDigitsV3()
-{
-	b1 = new BigInt("1");
-	b2 = new BigInt("-2");
-	b3 = b1.subtract(b2);
-	assertEquals("3",b3.toString());
-}@Test
-public void testSubtractSingleDigitsv4()
-{
-	b1 = new BigInt("-1");
-	b2 = new BigInt("-2");
-	b3 = b1.subtract(b2);
-	assertEquals("1",b3.toString());
-}
+	}
+	@Test
+	public void testSubtractSingleDigitsV2()
+	{
+		b1 = new BigInt("-1");
+		b2 = new BigInt("2");
+		b3 = b1.subtract(b2);
+		assertEquals("-3",b3.toString());
+	}
+	@Test
+	public void testSubtractSingleDigitsV3()
+	{
+		b1 = new BigInt("1");
+		b2 = new BigInt("-2");
+		b3 = b1.subtract(b2);
+		assertEquals("3",b3.toString());
+	}
+	@Test
+	public void testSubtractSingleDigitsv4()
+	{
+		b1 = new BigInt("-1");
+		b2 = new BigInt("-2");
+		b3 = b1.subtract(b2);
+		assertEquals("1",b3.toString());
+	}
 
 	@Test
 	public void testSubtractWithZeros()
@@ -381,5 +384,121 @@ public void testSubtractSingleDigitsv4()
 		b3 = b1.subtract(b2);
 		assertEquals("100",b3.toString());
 	}
+
+//****************************************************************
+
+	@Test
+	public void testMultiplyOne()
+	{
+		b1 = new BigInt("2");
+		b2 = new BigInt("2");
+		b3 = b1.multiply(b2);
+		assertEquals("4", b3.toString());
+	}
+
+	@Test
+	public void testMultiplyTwo()
+	{
+		b1 = new BigInt("0");
+		b2 = new BigInt("0");
+		b3 = b1.multiply(b2);
+		assertEquals("0",b3.toString());
+	}
+	@Test
+	public void testMultiplyThree()
+	{
+		b1 = new BigInt("0");
+		b2 = new BigInt("1");
+		b3 = b1.multiply(b2);
+		assertEquals("0",b3.toString());
+	}
+	@Test
+	public void testMultiplyFour()
+	{
+		b1 = new BigInt("1");
+		b2 = new BigInt("0");
+		b3 = b1.multiply(b2);
+		assertEquals("0",b3.toString());
+	}
+	@Test
+	public void testMultiplyFive()
+	{
+		b1 = new BigInt("-2");
+		b2 = new BigInt("9");
+		b3 = b1.multiply(b2);
+		assertEquals("-18",b3.toString());
+	}
+	@Test
+	public void testMultiplySix()
+	{
+		b1 = new BigInt("2");
+		b2 = new BigInt("-9");
+		b3 = b1.multiply(b2);
+		assertEquals("-18",b3.toString());
+	}
+	@Test
+	public void testMultiplySeven()
+	{
+		b1 = new BigInt("-8");
+		b2 = new BigInt("-5");
+		b3 = b1.multiply(b2);
+		assertEquals("40",b3.toString());
+	}
+	@Test
+	public void testMultiplyEight()
+	{
+		b1 = new BigInt("4");
+		b2 = new BigInt("13");
+		b3 = b1.multiply(b2);
+		assertEquals("52",b3.toString());
+	}
+	@Test
+	public void testMultiplyNine()
+	{
+		b1 = new BigInt("1");
+		b2 = new BigInt("-10");
+		b3 = b1.multiply(b2);
+		assertEquals("-10",b3.toString());
+	}
+	@Test
+	public void testMultiplyTen()
+	{
+		b1 = new BigInt("123");
+		b2 = new BigInt("23");
+		b3 = b1.multiply(b2);
+		assertEquals("2829",b3.toString());
+	}
+	@Test
+	public void testMultiplyEleven()
+	{
+		b1 = new BigInt("-23");
+		b2 = new BigInt("123");
+		b3 = b1.multiply(b2);
+		assertEquals("-2829",b3.toString());
+	}
+	@Test
+	public void testMultiplyTwelve()
+	{
+		b1 = new BigInt("9998");
+		b2 = new BigInt("8765");
+		b3 = b1.multiply(b2);
+		assertEquals("87632470",b3.toString());
+	}
+
+	@Test
+	public void testMultiplyIdentity()
+	{
+		b3 = new BigInt("1").multiply(new BigInt("123456"));
+		assertEquals("123456",b3.toString());
+	}
+
+	@Test
+	public void testmult()
+	{
+		b3 = new BigInt("111111111111111111111111111111111111111")
+				.multiply(new BigInt("2"));
+		assertEquals("222222222222222222222222222222222222222",b3.toString());
+	}
+
 
 }

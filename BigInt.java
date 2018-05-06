@@ -3,6 +3,7 @@ package RevisedBigInt;
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.lang.StringBuilder;
 
@@ -21,6 +22,7 @@ public class BigInt
 		else userValue.replaceFirst("^0*", "");
 
 		String absValue = verifySignAndLength(userValue);
+
 		try {
 			if (isInputValid(absValue))
 				this.numberArray = storeInArrayList(absValue);
@@ -126,19 +128,14 @@ public class BigInt
 		ArrayList<Integer> answer = new ArrayList<>();
 		if(this.numberArray.size() == 1 && other.numberArray.size() == 1)
 			answer.add(this.numberArray.get(0) - other.numberArray.get(0));
-
 		else if(!this.isCharged && !other.isCharged)  //  A.size = B.size || A - B
 			answer = subtractWithBorrow(this.numberArray, other.numberArray);
-
 		else if(!this.isCharged )  // A - (-B) = A + B
 			answer = add(this.numberArray, negate(other.numberArray));
-
 		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
 			answer = negate(subtractWithBorrow(negate(this.numberArray), negate(other.numberArray)));
-
 		else   // -A - B = -(A + B)
 			answer = negate(add(negate(this.numberArray), other.numberArray));
-
 		return answer;
 	}
 
@@ -168,13 +165,15 @@ public class BigInt
 	{
 		BigInt product;
 		reverse(this.numberArray,other.numberArray,null);
-		product = new BigInt(multiplyByCases(this.numberArray,other.numberArray));
+		product = new BigInt(multiplyByCases(other,this.numberArray,other.numberArray));
 		reverse(this.numberArray,other.numberArray,product.numberArray);
 		return product;
 
 	}
 
-	private ArrayList<Integer> multiplyByCases(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
+	private ArrayList<Integer> multiplyByCases(BigInt other,
+	                                           ArrayList<Integer> multiplicand,
+	                                           ArrayList<Integer> multiplier)
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		if(multiplicand.size()==1 && multiplier.size()==1)
@@ -184,7 +183,8 @@ public class BigInt
 				product = actuallyMultiply(multiplier, multiplicand);
 			else
 				product = actuallyMultiply(multiplicand, multiplier);
-			if(multiplicand.get(0) <= 0 || multiplier.get(0) <= 0){
+			if(!(this.isCharged && other.isCharged)&&
+					(this.isCharged || other.isCharged)){
 				product = negate(product);
 			}
 		}
@@ -200,8 +200,8 @@ public class BigInt
 		for(int i = 0 ; i < multiplier.size();i++) {
 			if(i>0) firstProduct = new ArrayList<>(addZerosToTheFront(firstProduct,i));
 			partialSum.clear();
-			for(int j = 0; j < multiplicand.size(); j++) {
-				tempProduct = Math.abs(multiplicand.get(j) * multiplier.get(i)) + carry;
+			for (Integer multiplied : multiplicand) {
+				tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
 				if (tempProduct >= 10) {
 					carry = tempProduct / 10;
 					firstProduct.add(tempProduct % 10);
@@ -209,7 +209,8 @@ public class BigInt
 					firstProduct.add(tempProduct);
 					carry = 0;
 				}
-			}if(carry!=0) firstProduct.add(carry); carry = 0;
+			}
+			if(carry!=0) firstProduct.add(carry); carry = 0;
 			if(i==0) {
 				product = new ArrayList<>(firstProduct);
 				firstProduct.clear();
@@ -244,16 +245,67 @@ public class BigInt
 			array.add(lastPos, 0);
 	}
 
+	boolean isEqualTo(BigInt other)
+	{
+		return this.numberArray.equals(other.numberArray);
+	}
+
+	int compareTo(BigInt other)
+	{
+		return this.isEqualTo(other) ? 0 : compareByCases(other);
+	}
+
+	private int compareByCases(BigInt other)
+	{
+		/*
+		Two cases:
+			- Both are equal length
+			- Unequal lengths
+		 */
+		if(getLen(other) == 0){
+			return this.isCharged || other.isCharged ?
+					compareBasedOnLength(other): compareEachNumber(other);
+		} else{
+			return compareBasedOnLength(other);
+		}
+	}
+	private int compareBasedOnLength(BigInt other)
+	{
+		if((!this.isCharged && other.isCharged))
+			return 1;
+		else if(this.isCharged && !other.isCharged)
+			return -1;
+		else if(!this.isCharged && (this.numberArray.size()>other.numberArray.size()))
+			return 1;
+		else if((!this.isCharged) && (this.numberArray.size()<other.numberArray.size()))
+			return -1;
+		else return compareEachNumber(other);
+
+	}
+	private int compareEachNumber(BigInt other)
+	{
+		ArrayList<Integer> first = new ArrayList<>(this.numberArray);
+		ArrayList<Integer> second = new ArrayList<>(other.numberArray);
+		int len = first.size();
+		for(int i = 0; i < len ; i++) {
+			if (first.get(i) > second.get(i))
+				return 1;
+			}
+		return -1;
+	}
+	private int getLen(BigInt other)
+	{
+		return this.numberArray.size()== other.numberArray.size() ? 0 : -1;
+	}
 	private ArrayList<Integer> negate(ArrayList<Integer> numberArray)
 	{
 		ArrayList<Integer> negatedArray = new ArrayList<>();
-		for (Integer aNumberArray : numberArray) {
+		for (Integer aNumberArray : numberArray)
 			negatedArray.add(aNumberArray * -1);
-		}
 		return negatedArray;
 	}
 
-	private void finalCheckForNegativeNumbers()
+	private void checkForNegativeNumbers()
 	{
 		for (Integer aNumberArray : this.numberArray) {
 			if (aNumberArray < 0) {
@@ -267,7 +319,7 @@ public class BigInt
 	public String toString()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		finalCheckForNegativeNumbers();
+		checkForNegativeNumbers();
 		if(isCharged) stringBuilder.append('-');
 
 		for (Integer aNumberArray : this.numberArray)
@@ -275,9 +327,7 @@ public class BigInt
 
 		String finalString = stringBuilder.toString();
 
-		if(finalString.matches("^[0]+$"))
-			return finalString.substring(0,1);
-		else
-			return finalString.replaceFirst("^0*", "");
+		return finalString.matches("^[0]+$") ?
+				finalString.substring(0,1) : finalString.replaceFirst("^0*", "");
 	}
 }

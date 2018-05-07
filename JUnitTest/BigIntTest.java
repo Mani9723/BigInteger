@@ -693,6 +693,14 @@ public class BigIntTest
 				.compareTo(new BigInt("-9999999")));
 	}
 
+	@Test
+	public void smallTest()
+	{
+		b1 = new BigInt("-12345");
+		b2 = new BigInt("1");
+		assertEquals(-1,b1.compareTo(b2));
+	}
+
 
 
 

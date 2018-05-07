@@ -3,7 +3,7 @@ package RevisedBigInt;
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Collections;
 import java.lang.StringBuilder;
 
@@ -17,10 +17,6 @@ public class BigInt
 
 	BigInt(String userValue)
 	{
-		if(userValue.matches("^[0]+$")) userValue.substring(0,1);
-
-		else userValue.replaceFirst("^0*", "");
-
 		String absValue = verifySignAndLength(userValue);
 
 		try {
@@ -252,35 +248,19 @@ public class BigInt
 
 	int compareTo(BigInt other)
 	{
-		return this.isEqualTo(other) ? 0 : compareByCases(other);
+		return this.isEqualTo(other) ? 0 : separateAndCompare(other);
+	}
+	private int separateAndCompare(BigInt other)
+	{
+		if(this.isCharged || other.isCharged) return handleNegativeCases(other);
+		else if(this.numberArray.size()==other.numberArray.size())
+			return compareEachNumber(other);
+		else return compareBasedOnLength(other);
 	}
 
-	private int compareByCases(BigInt other)
-	{
-		/*
-		Two cases:
-			- Both are equal length
-			- Unequal lengths
-		 */
-		if(getLen(other) == 0){
-			return this.isCharged || other.isCharged ?
-					compareBasedOnLength(other): compareEachNumber(other);
-		} else{
-			return compareBasedOnLength(other);
-		}
-	}
 	private int compareBasedOnLength(BigInt other)
 	{
-		if((!this.isCharged && other.isCharged))
-			return 1;
-		else if(this.isCharged && !other.isCharged)
-			return -1;
-		else if(!this.isCharged && (this.numberArray.size()>other.numberArray.size()))
-			return 1;
-		else if((!this.isCharged) && (this.numberArray.size()<other.numberArray.size()))
-			return -1;
-		else return compareEachNumber(other);
-
+		return getLen(other) == 1 ? 1 : -1;
 	}
 	private int compareEachNumber(BigInt other)
 	{
@@ -288,14 +268,19 @@ public class BigInt
 		ArrayList<Integer> second = new ArrayList<>(other.numberArray);
 		int len = first.size();
 		for(int i = 0; i < len ; i++) {
-			if (first.get(i) > second.get(i))
-				return 1;
-			}
-		return -1;
+			if (first.get(i) > second.get(i)) return 1;
+			else if(second.get(i) > first.get(i)) break;
+		}return -1;
+	}
+	private int handleNegativeCases(BigInt other)
+	{
+		if(this.isCharged && !other.isCharged) return -1;
+		else if(!this.isCharged && other.isCharged) return 1;
+		else return compareEachNumber(other);
 	}
 	private int getLen(BigInt other)
 	{
-		return this.numberArray.size()== other.numberArray.size() ? 0 : -1;
+		return this.numberArray.size() > other.numberArray.size() ? 1 : -1;
 	}
 	private ArrayList<Integer> negate(ArrayList<Integer> numberArray)
 	{

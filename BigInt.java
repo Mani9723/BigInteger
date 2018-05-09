@@ -10,46 +10,90 @@ import java.lang.StringBuilder;
  *
  * This {@link BigInt} class allows for basic arithmetic on large integers.
  * Primitive data types such as int,double,float,long can hold only so much.
+ *
  * <p>
- *     <table border = 1 cellpadding = "5">
+ *     <table summary = "Primitive Data Types" border = 1 cellpadding = "5">
  *         <tr>
- *             <th>Type</th>
- *             <th>Size</th>
- *             <th>Range</th>
+ *             <th>
+ *                 Type
+ *             </th>
+ *             <th>
+ *                 Size
+ *             </th>
+ *             <th>
+ *                 Range
+ *             </th>
  *         </tr>
  *         <tr>
- *             <td>Byte</td>
- *             <td>16 Bits</td>
- *             <td>-128 .. 127</td>
+ *             <td>
+ *                 Byte
+ *             </td>
+ *             <td>
+ *                 16 Bits
+ *             </td>
+ *             <td>
+ *                 -128 .. 127
+ *             </td>
  *         </tr>
  *         <tr>
- *             <td>short</td>
- *             <td>16 bits</td>
- *             <td>-32,768 .. 32,767</td>
+ *             <td>
+ *                 short
+ *             </td>
+ *             <td>
+ *                 16 bits
+ *             </td>
+ *             <td>
+ *                 -32,768 .. 32,767
+ *             </td>
  *         </tr>
  *         <tr>
- *             <td>int</td>
- *             <td>32 bits</td>
- *             <td>-2,147,483,648 .. 2,147,483,647</td>
+ *             <td>
+ *                 int
+ *             </td>
+ *             <td>
+ *                 32 bits
+ *             </td>
+ *             <td>
+ *                 -2,147,483,648 .. 2,147,483,647
+ *             </td>
  *         </tr>
  *         <tr>
- *             <td>long</td>
- *             <td>64 bits</td>
- *             <td>-9,223,372,036,854,775,808 .. 9,223,372,036,854,775,807</td>
+ *             <td>
+ *                 long
+ *             </td>
+ *             <td>
+ *                 64 bits
+ *             </td>
+ *             <td>
+ *                 -9,223,372,036,854,775,808 .. 9,223,372,036,854,775,807
+ *             </td>
  *         </tr>
  *         <tr>
- *             <td>float</td>
- *             <td>32 bits</td>
- *             <td>3.40282347 x 1038, 1.40239846 x 10-45</td>
+ *             <td>
+ *                 float
+ *             </td>
+ *             <td>
+ *                 32 bits
+ *             </td>
+ *             <td>
+ *                 3.40282347 x 1038, 1.40239846 x 10-45
+ *             </td>
  *         </tr>
  *         <tr>
- *             <td>double</td>
- *             <td>64 bits</td>
- *             <td>1.7976931348623157 x 10308, 4.9406564584124654 x 10-324</td>
+ *             <td>
+ *                 double
+ *             </td>
+ *             <td>
+ *                 64 bits
+ *             </td>
+ *             <td>
+ *                 1.7976931348623157 x 10308, 4.9406564584124654 x 10-324
+ *             </td>
  *         </tr>
  *     </table>
  *
  * </p>
+ *
  *
  * When dealing numbers that are arbitrarily lengthy those data types are not helpful
  * and will create more problems then necessary.
@@ -81,7 +125,7 @@ import java.lang.StringBuilder;
 public class BigInt
 {
 	/**
-	 * This private instance ArrayList {@link #numberArray} will hold the current
+	 * This private instance ArrayList {@code #numberArray} will hold the current
 	 * arraylist that the BigInt object is referencing.
 	 * It is not initialized to any size at the moment.
 	 * I have opted not to use the ArrayList's minimum capacity feature.
@@ -89,7 +133,7 @@ public class BigInt
 	private ArrayList<Integer> numberArray = new ArrayList<>();
 
 	/**
-	 * A private instance of a boolean {@link #isCharged} will
+	 * A private instance of a boolean {@code #isCharged} will
 	 * hold the charge of the integer.
 	 * This variable is the deciding factor in the arthemtic sitautions that this class
 	 * handles.
@@ -233,7 +277,7 @@ public class BigInt
 	 * be negated.
 	 *
 	 * The resulting ArrayLists are first reversed since additions are done from right to left.
-	 * Then the sum is produced through helper method {@link #add(BigInt)} and stored in a temporary
+	 * Then the sum is produced through helper method {@link #add(ArrayList, ArrayList)}  and stored in a temporary
 	 * BigInt object.
 	 *
 	 * All of the ArrayLists are reversed to their original positions and the sum is returned through
@@ -311,31 +355,44 @@ public class BigInt
 	 * to handle it by cases.
 	 *
 	 * <p>
-	 *     <table border = 1 cellpadding = "5">
+	 *     <table summary = "" border = 1 cellpadding = "5">
 	 *         <tr>
-	 *             <th>Cases</th>
+	 *             <th>
+	 *                 Cases
+	 *             </th>
 	 *         </tr>
 	 *         <tr>
-	 *             <td>A.size = B.size || A - B</td>
+	 *             <td>
+	 *                 A.size = B.size || A - B
+	 *             </td>
 	 *         </tr>
 	 *         <tr>
-	 *             <td>A - (-B) = A + B</td>
+	 *             <td>
+	 *                 A - (-B) = A + B
+	 *             </td>
 	 *         </tr>
 	 *         <tr>
-	 *             <td>-A - (-B) = -A + B = B - A</td>
+	 *             <td>
+	 *                 -A - (-B) = -A + B = B - A
+	 *             </td>
 	 *         </tr>
 	 *         <tr>
-	 *             <td>-A - B = -(A + B)</td>
+	 *             <td>
+	 *                 -A - B = -(A + B)
+	 *             </td>
 	 *         </tr>
 	 *     </table>
-	 *
 	 * </p>
 	 *
 	 * The cases will simplify the process by using addition to subtract
 	 * Even though both of them are using the same algorithm the time spent is
 	 * the same. Its better because addition is slightly faster.
-	 * @param other
-	 * @return
+	 * The {@link #compareTo(BigInt)} will compare the values then decided
+	 * how to subtract; whether A-B or B-A.
+	 * {@link #negate(ArrayList)} will change the value based on the sign of the values.
+	 *
+	 * @param other - Represents the second BigInt object to be subtracted
+	 * @return - The difference as an ArrayList
 	 */
 	private ArrayList<Integer> subtractionByCases(BigInt other)
 	{
@@ -343,7 +400,9 @@ public class BigInt
 		if(this.numberArray.size() == 1 && other.numberArray.size() == 1)
 			answer.add(this.numberArray.get(0) - other.numberArray.get(0));
 		else if(!this.isCharged && !other.isCharged)  //  A.size = B.size || A - B
-			answer = subtractWithBorrow(this.numberArray, other.numberArray);
+			answer = this.compareTo(other) == -1
+					? negate(subtractWithBorrow(other.numberArray,this.numberArray))
+					: subtractWithBorrow(this.numberArray, other.numberArray);
 		else if(!this.isCharged )  // A - (-B) = A + B
 			answer = add(this.numberArray, negate(other.numberArray));
 		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
@@ -353,6 +412,20 @@ public class BigInt
 		return answer;
 	}
 
+	/**
+	 * This algorithm is similar to the {@link #add(ArrayList, ArrayList)} method
+	 * where the only difference is how this algorithm handles the borrowing of numbers.
+	 *
+	 * As with the add method, the two ArrayLists are compared and equalized their length
+	 * so that the method does not throw an IndexOutOfRange error and NullPointerError.
+	 *
+	 * The difference is stored in an ArrayList that will be destroyed upon the end of this method.
+	 * Nothing else is different
+	 *
+	 * @param minuend - The first Value
+	 * @param subtrahend - The second Value
+	 * @return The difference as an ArrayList
+	 */
 	private ArrayList<Integer> subtractWithBorrow(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
 	{
 		compareAndPadArrayList(minuend,subtrahend);
@@ -375,6 +448,19 @@ public class BigInt
 		return difference;
 	}
 
+	/**
+	 * This method will multiply two arbitrarily large integers
+	 * {x,y | x E Z, y E Z}.
+	 * As with the other methods, It will reverse and store the result in
+	 * another temporary BigInt object.
+	 *
+	 * This method goes into a helper method {@link #multiplyByCases(BigInt, ArrayList, ArrayList)}
+	 * that will separate the values into cases and then multiply them together.
+	 *
+	 *
+	 * @param other represent second object
+	 * @return product as BigInt object
+	 */
 	BigInt multiply(BigInt other)
 	{
 		BigInt product;
@@ -385,6 +471,28 @@ public class BigInt
 
 	}
 
+	/**
+	 * This method divides the two numbers in cases to easily multiply them
+	 * and send the modified values to the method that actually multiplies the
+	 * two numbers.
+	 *
+	 * Since two numbers can be of variable length, it's better to perform the operation
+	 * that takes the least amount of time. In other words if one of the
+	 * integers has less digits than the other, the larger integer is multiplied
+	 * by the one with the less digits, saving time and memory.
+	 *
+	 * Identities are quickly handles without the need to actually be multiplied.
+	 * A * 1 = A
+	 * A * 0 = 0
+	 *
+	 * THe final product will be negated if and only if either of the values are negative
+	 * but not both.
+	 *
+	 * @param other - Object that represents the multiplier
+	 * @param multiplicand - ArrayList
+	 * @param multiplier- ArrayList
+	 * @return The product as an ArrayList
+	 */
 	private ArrayList<Integer> multiplyByCases(BigInt other,
 	                                           ArrayList<Integer> multiplicand,
 	                                           ArrayList<Integer> multiplier)
@@ -405,6 +513,31 @@ public class BigInt
 		return product;
 	}
 
+	/**
+	 * The actual multiplication algorithm. Borrows a lot from the addition with some
+	 * cosmetic changes.
+	 * I had to use traditional multiplication method because all the other
+	 * algorithms such as the Karatsuba Algorithm relied on the fact that
+	 * the numbers were represented in a pure form and not in an arraylist where
+	 * each individual digits were a seperate element.
+	 *
+	 * That hindered me so I had to use the traditional method.
+	 * Which led to me having to deal with partial sums.
+	 * Since the traditional methods requires all the individual products
+	 * to be added to create the final product, I had to replicate that process.
+	 * I used only two main ArrayList and a third temporary one that will only get created
+	 * as a medium to temporary hold another arrayList.
+	 *
+	 * Since ArrayList have two levels of copying namely, shallow and deep.
+	 * It was important to note that if we simply assign two arraylist as such as: array = array2
+	 * then its copy by reference and whatever you do the originial arraylist the second one will be
+	 * replicating that action.
+	 * So we have to use a deep copy can entirely assign all the elements to a new array.
+	 *
+	 * @param multiplicand - First ArrayList
+	 * @param multiplier - Second ArrayList
+	 * @return the product as ArrayList
+	 */
 	private ArrayList<Integer> actuallyMultiply(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
 	{
 		int carry = 0, tempProduct;
@@ -412,7 +545,7 @@ public class BigInt
 				partialSum = new ArrayList<>();
 
 		for(int i = 0 ; i < multiplier.size();i++) {
-			if(i>0) firstProduct = new ArrayList<>(addZerosToTheFront(firstProduct,i));
+			if(i>0) firstProduct = new ArrayList<>(addZerosToTheFrontOfPartialSum(firstProduct,i));
 			partialSum.clear();
 			for (Integer multiplied : multiplicand) {
 				tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
@@ -437,13 +570,31 @@ public class BigInt
 		}return product;
 	}
 
-	private ArrayList<Integer> addZerosToTheFront(ArrayList<Integer> firstProduct, int zeros)
+	/**
+	 * This method simply adds zeros to the partial sum
+	 * It will add zeros to the beginning(since the arraylist being passed
+	 * is reversed).
+	 *
+	 * @param firstProduct - ArrayList to be padded
+	 * @param zeros - The number of zeros to be added
+	 * @return - Padded ArrayList
+	 */
+	private ArrayList<Integer> addZerosToTheFrontOfPartialSum(ArrayList<Integer> firstProduct, int zeros)
 	{
 		for(int i = 0; i < zeros; i++)
 			firstProduct.add(i,0);
 		return firstProduct;
 	}
 
+	/**
+	 * This method is the one tha compares the length of the ArrayList.
+	 * The helper method {@link #addZerosToTheFrontOfPartialSum(ArrayList, int)}
+	 * will actually add zeros.
+	 * What this method does is that is finds the difference in length and
+	 * passes that value along with the arraylist that needs to be padded.
+	 * @param firstArray - ArrayList
+	 * @param secondArray - ArrayList
+	 */
 	private void compareAndPadArrayList(ArrayList<Integer> firstArray, ArrayList<Integer> secondArray)
 	{
 		int second = secondArray.size(), first = firstArray.size();
@@ -452,6 +603,12 @@ public class BigInt
 		} else padWithZeros(secondArray, first - second);
 	}
 
+	/**
+	 * This method will pad the arraylist that is not equal in length
+	 * to the other arraylist.
+	 * @param array - Array to be padded
+	 * @param numberOfZeros - self explanatory
+	 */
 	private void padWithZeros(ArrayList<Integer> array, int numberOfZeros)
 	{
 		int lastPos = array.size();
@@ -459,15 +616,39 @@ public class BigInt
 			array.add(lastPos, 0);
 	}
 
+	/**
+	 * Returns true if both objects are equal to each other
+	 * @param other - BigInt object
+	 * @return boolean
+	 */
 	boolean isEqualTo(BigInt other)
 	{
 		return this.numberArray.equals(other.numberArray);
 	}
 
+	/**
+	 * Compares the two ArrayList if {@link #isEqualTo(BigInt)} is false.
+	 * Relies on a number of helper methods to compare since dividing into cases
+	 * makes things easier.
+	 *
+	 * I decided to use ternary operator just for kicks.
+	 * @param other - BigInt object
+	 * @return int value: 0,1,-1
+	 */
 	int compareTo(BigInt other)
 	{
 		return this.isEqualTo(other) ? 0 : separateAndCompare(other);
 	}
+
+	/**
+	 * This is helper method will separate the two values into different cases.
+	 * Separate into negative cases; which will be taken into a different method.
+	 * If the length are equal then it will call {@link #compareEachNumber(BigInt)}
+	 * which will return the larger arraylist
+	 *
+	 * @param other - BigInt object
+	 * @return int value 1,-1
+	 */
 	private int separateAndCompare(BigInt other)
 	{
 		if(this.isCharged || other.isCharged) return handleNegativeCases(other);
@@ -476,10 +657,24 @@ public class BigInt
 		else return compareBasedOnLength(other);
 	}
 
+	/**
+	 * This method will only be used if both arrays are positive.
+	 * It will simply return an int value based on which arraylist is longer
+	 * @param other BigInt object
+	 * @return int value 1,-1
+	 */
 	private int compareBasedOnLength(BigInt other)
 	{
 		return getLen(other) == 1 ? 1 : -1;
 	}
+
+	/**
+	 * This method will be called if both arraylists are equal in length.
+	 * It will return an int value as soon as the for loop discovers
+	 * if  {@code a[i] < b[i]} or {@code a[i] > b[i]}.
+	 * @param other BigInt object
+	 * @return int 1,-1
+	 */
 	private int compareEachNumber(BigInt other)
 	{
 		ArrayList<Integer> first = new ArrayList<>(this.numberArray);
@@ -490,16 +685,42 @@ public class BigInt
 			else if(second.get(i) > first.get(i)) break;
 		}return -1;
 	}
+
+	/**
+	 * This method handles comparison when either of the arraylist are negative.
+	 * {@code -A < B}
+	 * {@code A > -B}
+	 *
+	 * -A and -B then {@link #compareEachNumber(BigInt)} will be called.
+	 *
+	 * @param other BigInt object
+	 * @return int 1,-1
+	 */
 	private int handleNegativeCases(BigInt other)
 	{
 		if(this.isCharged && !other.isCharged) return -1;
 		else if(!this.isCharged && other.isCharged) return 1;
 		else return compareEachNumber(other);
 	}
+
+	/**
+	 * Return the int value indicating which arraylist is longer
+	 * 1 if the first one
+	 * -1 if the second one
+	 * @param other BigInt object
+	 * @return int 1,-1
+	 */
 	private int getLen(BigInt other)
 	{
 		return this.numberArray.size() > other.numberArray.size() ? 1 : -1;
 	}
+
+	/**
+	 * This method will negate the Arraylist's each element so that operations
+	 * are done properly.
+	 * @param numberArray - Arraylist to be negated
+	 * @return The negated arraylist
+	 */
 	private ArrayList<Integer> negate(ArrayList<Integer> numberArray)
 	{
 		ArrayList<Integer> negatedArray = new ArrayList<>();
@@ -508,6 +729,14 @@ public class BigInt
 		return negatedArray;
 	}
 
+	/**
+	 * This is a redundant method that will determine if there needs to be
+	 * a negative sign on the final string representation of the BigInt object
+	 * when being printed.
+	 * It does not need to go through the entire array the worst case is that there
+	 * are zeros in the begining; which really does not happen.
+	 * 99% of the cases will only need to check the first value.
+	 */
 	private void checkForNegativeNumbers()
 	{
 		for (Integer aNumberArray : this.numberArray) {
@@ -518,6 +747,10 @@ public class BigInt
 		}
 	}
 
+	/**
+	 * Overrides the Object class's toString method and prints the string of BigInt.
+	 * @return String representation of the object
+	 */
 	@Override
 	public String toString()
 	{

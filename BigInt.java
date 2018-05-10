@@ -2,6 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -11,7 +12,7 @@ import java.lang.StringBuilder;
  * This {@link BigInt} class allows for basic arithmetic on large integers.
  * Primitive data types such as int,double,float,long can hold only so much.
  *
- * <p>
+ *
  *     <table summary = "Primitive Data Types" border = 1 cellpadding = "5">
  *         <tr>
  *             <th>
@@ -92,7 +93,7 @@ import java.lang.StringBuilder;
  *         </tr>
  *     </table>
  *
- * </p>
+ *
  *
  *
  * When dealing numbers that are arbitrarily lengthy those data types are not helpful
@@ -169,6 +170,8 @@ public class BigInt
 			System.exit(-1);
 		}
 	}
+
+
 
 	/**
 	 * Private constructor that acts as an lightweight constructor
@@ -267,6 +270,18 @@ public class BigInt
 	}
 
 	/**
+	 * Returns the Absolute value of this BigInteger
+	 *
+	 * @return BigInt
+	 */
+	BigInt absValue()
+	{
+		return this.isCharged ?
+				new BigInt(this.negate(this.numberArray)) : this;
+
+	}
+
+	/**
 	 * Add method.
 	 *
 	 * This method will add any two arbritarily large integers in the set {x | x E Z}.
@@ -354,7 +369,8 @@ public class BigInt
 	 * Since subtraction is not commutative and not associative, its better
 	 * to handle it by cases.
 	 *
-	 * <p>
+	 *
+	 *
 	 *     <table summary = "" border = 1 cellpadding = "5">
 	 *         <tr>
 	 *             <th>
@@ -382,7 +398,7 @@ public class BigInt
 	 *             </td>
 	 *         </tr>
 	 *     </table>
-	 * </p>
+	 * 
 	 *
 	 * The cases will simplify the process by using addition to subtract
 	 * Even though both of them are using the same algorithm the time spent is
@@ -399,17 +415,47 @@ public class BigInt
 		ArrayList<Integer> answer = new ArrayList<>();
 		if(this.numberArray.size() == 1 && other.numberArray.size() == 1)
 			answer.add(this.numberArray.get(0) - other.numberArray.get(0));
-		else if(!this.isCharged && !other.isCharged)  //  A.size = B.size || A - B
-			answer = this.compareTo(other) == -1
-					? negate(subtractWithBorrow(other.numberArray,this.numberArray))
-					: subtractWithBorrow(this.numberArray, other.numberArray);
-		else if(!this.isCharged )  // A - (-B) = A + B
-			answer = add(this.numberArray, negate(other.numberArray));
-		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
-			answer = negate(subtractWithBorrow(negate(this.numberArray), negate(other.numberArray)));
-		else   // -A - B = -(A + B)
-			answer = negate(add(negate(this.numberArray), other.numberArray));
+		else if(this.isCharged || other.isCharged)
+			answer = new ArrayList<>(negativeSubtractionCases(other));
+		else{
+			answer = new ArrayList<>(positiveSubtractionCases(other));
+		}
 		return answer;
+	}
+
+	/**
+	 * Private helper method that handles cases where both A and B
+	 * are positive. If A is less than B then -(B - A) otherwise
+	 * it does the normal subtraction.
+	 * @param other - BigInt object represents the second value
+	 * @return difference
+	 */
+	private ArrayList<Integer> positiveSubtractionCases(BigInt other)
+	{
+		reverse(this.numberArray,other.numberArray,null);
+		if(this.isLessThan(other)) {
+			reverse(this.numberArray, other.numberArray, null);
+			return negate(subtractWithBorrow(other.numberArray, this.numberArray));
+		} else {
+			reverse(this.numberArray, other.numberArray, null);
+			return subtractWithBorrow(this.numberArray, other.numberArray);
+		}
+	}
+
+	/**
+	 * Handles the cases whether the values are negative either -A || -B
+	 *
+	 * @param other BigInt Object represent the second value
+	 * @return difference
+	 */
+	private ArrayList<Integer> negativeSubtractionCases(BigInt other)
+	{
+		if(!this.isCharged )  // A - (-B) = A + B
+			return add(this.numberArray, negate(other.numberArray));
+		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
+			return negate(subtractWithBorrow(negate(this.numberArray), negate(other.numberArray)));
+		else   // -A - B = -(A + B)
+			return negate(add(negate(this.numberArray), other.numberArray));
 	}
 
 	/**
@@ -441,8 +487,7 @@ public class BigInt
 				difference.add(tempSum);
 				borrow = 0;
 			}
-		}
-		if(difference.get(difference.size()-1) == 0)
+		}if(difference.get(difference.size()-1) == 0)
 			difference.remove(difference.size()-1);
 
 		return difference;
@@ -617,6 +662,16 @@ public class BigInt
 	}
 
 	/**
+	 * Returns true is {@code this < other}
+	 * @param other BigInt object
+	 * @return boolean
+	 */
+	private boolean isLessThan(BigInt other)
+	{
+		return this.compareTo(other) == -1;
+	}
+
+	/**
 	 * Returns true if both objects are equal to each other
 	 * @param other - BigInt object
 	 * @return boolean
@@ -749,6 +804,12 @@ public class BigInt
 
 	/**
 	 * Overrides the Object class's toString method and prints the string of BigInt.
+	 * Uses Stringbuilder class rather than the standard + sign to concat the strings.
+	 * It does a final check for negative numbers. That method should only go past the
+	 * first element if that first element happens to be 0 otherwise 99% of the time
+	 * it will only have to check the first element for a negative value.
+	 * I decided to use regex to check if there were any leading zeros in the arraylist
+	 * due to subtraction or addition
 	 * @return String representation of the object
 	 */
 	@Override

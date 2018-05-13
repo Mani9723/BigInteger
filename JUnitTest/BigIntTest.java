@@ -10,6 +10,30 @@ public class BigIntTest
 	private BigInt b1, b2, b3;
 
 	@Test
+	public void testSub()
+	{
+		long beg = System.currentTimeMillis();
+		assertEquals("-988", new BigInt("1").subtract(new BigInt("989")).toString());
+		System.out.println(System.currentTimeMillis()-beg);
+	}
+
+	@Test
+	public void testAbs()
+	{
+		b1 = new BigInt("167");
+		assertEquals(b1.toString(),b1.absValue().toString());
+
+	}
+
+	@Test
+	public void testAbs1()
+	{
+		b1 = new BigInt("-167");
+		assertEquals("167",b1.absValue().toString());
+
+	}
+
+	@Test
 	public void testAddZero()
 	{
 		b1 = new BigInt("-0");
@@ -701,7 +725,99 @@ public class BigIntTest
 		assertEquals(-1,b1.compareTo(b2));
 	}
 
+	@Test
+	public void textMaximum()
+	{
+		b1 = new BigInt("12345678987654321");
+		assertEquals(b1,b1.max(new BigInt("123456787654321")));
+	}
 
+	@Test
+	public void textMaximumV1()
+	{
+		b1 = new BigInt("-12345678987654321");
+		b2 = new BigInt("123456787654321");
+		assertEquals(b2,b1.max(b2));
+	}
+
+	@Test
+	public void textMaximumV2()
+	{
+		b1 = new BigInt("12345678987654321");
+		b2 = new BigInt("-9876823456787654321");
+		assertEquals(b1,b1.max(b2));
+	}
+
+	@Test
+	public void textMaximumV3()
+	{
+		b1 = new BigInt("-12345678987654321");
+		b2 = new BigInt("9876823456787654321");
+		assertEquals(b2,b1.max(b2));
+	}
+
+	@Test
+	public void textMaximumV4()
+	{
+		b1 = new BigInt("-12345678987654321");
+		b2 = new BigInt("-9876823456787654321");
+		assertEquals(b1,b1.max(b2));
+	}
+
+	@Test
+	public void textMaximumV5()
+	{
+		b1 = new BigInt("-87963847512345678987654321");
+		b2 = new BigInt("-9876823456787654321");
+		assertEquals(b2,b1.max(b2));
+	}
+@Test
+	public void textMinimum()
+	{
+		b1 = new BigInt("12345678987654321");
+		b2 = new BigInt("123456787654321");
+		assertEquals(b2,b1.min(b2));
+	}
+
+	@Test
+	public void textMinimumV1()
+	{
+		b1 = new BigInt("-12345678987654321");
+		b2 = new BigInt("123456787654321");
+		assertEquals(b1,b1.min(b2));
+	}
+
+	@Test
+	public void textMinimumV2()
+	{
+		b1 = new BigInt("12345678987654321");
+		b2 = new BigInt("-9876823456787654321");
+		assertEquals(b2,b1.min(b2));
+	}
+
+	@Test
+	public void textMinimumV3()
+	{
+		b1 = new BigInt("-12345678987654321");
+		b2 = new BigInt("9876823456787654321");
+		assertEquals(b1,b1.min(b2));
+	}
+
+	@Test
+	public void textMinimumV4()
+	{
+		b1 = new BigInt("-12345678987654321");
+		b2 = new BigInt("-9876823456787654321");
+		assertEquals(b2,b1.min(b2));
+	}
+
+	@Test
+	public void textMinimumV5()
+	{
+		b1 = new BigInt("-87963847512345678987654321");
+		b2 = new BigInt("-9876823456787654321");
+		assertEquals(b1,b1.min(b2));
+	}
 
 
 

@@ -2,7 +2,6 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -123,7 +122,7 @@ import java.lang.StringBuilder;
  */
 
 //Hare Krsna
-public class BigInt
+public class BigInt implements BigIntInterface
 {
 	/**
 	 * This private instance ArrayList {@code #numberArray} will hold the current
@@ -170,6 +169,11 @@ public class BigInt
 			System.exit(-1);
 		}
 	}
+
+	BigInt()
+    {
+        //DEFAULT
+    }
 
 
 
@@ -301,7 +305,7 @@ public class BigInt
 	 * @param other -  BigInt object representing the auguend
 	 * @return the sum of this and other in an ArrayList.
 	 */
-	BigInt add(BigInt other)
+	public BigInt add(BigInt other)
 	{
 		reverse(this.numberArray,other.numberArray,null);
 		BigInt f = new BigInt(add(this.numberArray, other.numberArray));
@@ -312,7 +316,7 @@ public class BigInt
 	/**
 	 * The helper method that will compute the sum of two large integers.
 	 *
-	 * It uses a helper method {@link #compareAndPadArrayList(ArrayList, ArrayList)}
+	 * It uses a helper method {@link #padArrayList(ArrayList, ArrayList)}
 	 * that will balance out the difference in sizes
 	 * between the two ArrayList otherwise it will throw an {@link IndexOutOfBoundsException}
 	 * since one of the ArrayList is requested access to an element that does not exist.
@@ -329,7 +333,7 @@ public class BigInt
 	{
 		int carry = 0, tempSum;
 		ArrayList<Integer> sum = new ArrayList<>();
-		if(addend.size()!=auguend.size()) compareAndPadArrayList(addend, auguend);
+		if(addend.size()!=auguend.size()) padArrayList(addend, auguend);
 
 		for (int i = 0; i < addend.size(); i++) {
 			tempSum = addend.get(i) + auguend.get(i) + carry;
@@ -356,7 +360,7 @@ public class BigInt
 	 * @param other - BigInt object that represents the subtrahend
 	 * @return the difference
 	 */
-	BigInt subtract(BigInt other)
+	public BigInt subtract(BigInt other)
 	{
 		BigInt difference;
 		reverse(this.numberArray,other.numberArray,null);
@@ -398,7 +402,7 @@ public class BigInt
 	 *             </td>
 	 *         </tr>
 	 *     </table>
-	 * 
+	 *
 	 *
 	 * The cases will simplify the process by using addition to subtract
 	 * Even though both of them are using the same algorithm the time spent is
@@ -435,10 +439,10 @@ public class BigInt
 		reverse(this.numberArray,other.numberArray,null);
 		if(this.isLessThan(other)) {
 			reverse(this.numberArray, other.numberArray, null);
-			return negate(subtractWithBorrow(other.numberArray, this.numberArray));
+			return negate(subtractAlgo(other.numberArray, this.numberArray));
 		} else {
 			reverse(this.numberArray, other.numberArray, null);
-			return subtractWithBorrow(this.numberArray, other.numberArray);
+			return subtractAlgo(this.numberArray, other.numberArray);
 		}
 	}
 
@@ -453,7 +457,7 @@ public class BigInt
 		if(!this.isCharged )  // A - (-B) = A + B
 			return add(this.numberArray, negate(other.numberArray));
 		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
-			return negate(subtractWithBorrow(negate(this.numberArray), negate(other.numberArray)));
+			return negate(subtractAlgo(negate(this.numberArray), negate(other.numberArray)));
 		else   // -A - B = -(A + B)
 			return negate(add(negate(this.numberArray), other.numberArray));
 	}
@@ -472,9 +476,9 @@ public class BigInt
 	 * @param subtrahend - The second Value
 	 * @return The difference as an ArrayList
 	 */
-	private ArrayList<Integer> subtractWithBorrow(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
+	private ArrayList<Integer> subtractAlgo(ArrayList<Integer> minuend, ArrayList<Integer> subtrahend)
 	{
-		compareAndPadArrayList(minuend,subtrahend);
+		padArrayList(minuend,subtrahend);
 		ArrayList<Integer> difference = new ArrayList<>();
 		int tempSum, borrow = 0;
 
@@ -506,7 +510,7 @@ public class BigInt
 	 * @param other represent second object
 	 * @return product as BigInt object
 	 */
-	BigInt multiply(BigInt other)
+	public BigInt multiply(BigInt other)
 	{
 		BigInt product;
 		reverse(this.numberArray,other.numberArray,null);
@@ -631,6 +635,47 @@ public class BigInt
 		return firstProduct;
 	}
 
+
+	/**
+	 * Division method.
+	 * The goal is to division two large strings representation of Integers and produce
+	 * quotient. This is the most difficult of algorithm so far. Since the other operations
+	 * can be done with just a for-loop, this takes a little bit more thinking.
+	 *
+	 * @param other
+	 * @return
+	 */
+	public BigInt divideBy(BigInt other)
+    {
+        BigInt quotient = new BigInt();
+        reverse(this.numberArray,other.numberArray,null);
+       // quotient = new BigInt(divideHelper(other));
+        reverse(this.numberArray,other.numberArray,null);
+        return quotient;
+    }
+
+
+	/**
+	 * I want to do recursion
+	 *
+	 * divide()
+	 * Base Case: if(difference of dividend and divisor) < divisor
+	 *              quotient is found and the remainder is the difference
+	 *
+	 * Otherwise:
+	 *      increment #0f iteration = mod
+	 *      divide(subtract dividend - divisor)
+	 *
+	 *
+	 *
+	 *
+	 */
+
+	private void recursivelyDivide(ArrayList dividend, ArrayList divisor, )
+
+
+
+
 	/**
 	 * This method is the one tha compares the length of the ArrayList.
 	 * The helper method {@link #addZerosToTheFrontOfPartialSum(ArrayList, int)}
@@ -640,7 +685,7 @@ public class BigInt
 	 * @param firstArray - ArrayList
 	 * @param secondArray - ArrayList
 	 */
-	private void compareAndPadArrayList(ArrayList<Integer> firstArray, ArrayList<Integer> secondArray)
+	private void padArrayList(ArrayList<Integer> firstArray, ArrayList<Integer> secondArray)
 	{
 		int second = secondArray.size(), first = firstArray.size();
 		if (firstArray.size() < secondArray.size()) {
@@ -712,6 +757,12 @@ public class BigInt
 		else return compareBasedOnLength(other);
 	}
 
+	private int compareArrayLists(ArrayList<Integer> first, ArrayList<Integer> second)
+	{
+		return first.size()==second.size() ? compareEachNumberForLoop(first,second)
+				: compareBasedOnLengthArrayList(first,second);
+	}
+
 	/**
 	 * This method will only be used if both arrays are positive.
 	 * It will simply return an int value based on which arraylist is longer
@@ -724,6 +775,18 @@ public class BigInt
 	}
 
 	/**
+	 * This method takes ArrayList as a paramenter and is identical to
+	 * {@link #compareBasedOnLength(BigInt)}
+	 * @param first -ArrayList
+	 * @param second -ArrayList
+	 * @return 1 or -1
+	 */
+	private int compareBasedOnLengthArrayList(ArrayList first, ArrayList second)
+	{
+		return first.size()>second.size()? 1 : -1;
+	}
+
+	/**
 	 * This method will be called if both arraylists are equal in length.
 	 * It will return an int value as soon as the for loop discovers
 	 * if  {@code a[i] < b[i]} or {@code a[i] > b[i]}.
@@ -732,15 +795,19 @@ public class BigInt
 	 */
 	private int compareEachNumber(BigInt other)
 	{
-		ArrayList<Integer> first = new ArrayList<>(this.numberArray);
-		ArrayList<Integer> second = new ArrayList<>(other.numberArray);
+//		ArrayList<Integer> first = new ArrayList<>(this.numberArray);
+//		ArrayList<Integer> second = new ArrayList<>(other.numberArray);
+		return compareEachNumberForLoop(this.numberArray,other.numberArray);
+	}
+
+	private int compareEachNumberForLoop(ArrayList<Integer> first, ArrayList<Integer> second)
+	{
 		int len = first.size();
 		for(int i = 0; i < len ; i++) {
 			if (first.get(i) > second.get(i)) return 1;
 			else if(second.get(i) > first.get(i)) break;
 		}return -1;
 	}
-
 	/**
 	 * This method handles comparison when either of the arraylist are negative.
 	 * {@code -A < B}

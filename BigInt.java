@@ -2,6 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -170,12 +171,10 @@ public class BigInt implements BigIntInterface
 		}
 	}
 
-	BigInt()
+	private BigInt()
     {
         //DEFAULT
     }
-
-
 
 	/**
 	 * Private constructor that acts as an lightweight constructor
@@ -671,9 +670,6 @@ public class BigInt implements BigIntInterface
 	 *
 	 */
 
-	private void recursivelyDivide(ArrayList dividend, ArrayList divisor, )
-
-
 
 
 	/**
@@ -724,6 +720,28 @@ public class BigInt implements BigIntInterface
 	boolean isEqualTo(BigInt other)
 	{
 		return this.numberArray.equals(other.numberArray);
+	}
+
+	/**
+	 * Return maximum of this or other BigInt if
+	 * {@code this > other} or {@code other > this}
+	 * @param other - BigInt to be compared
+	 * @return the larger BigInt Object
+	 */
+	BigInt max(BigInt other)
+	{
+		return this.isLessThan(other) ? other : this;
+	}
+
+	/**
+	 * Return the minimum of this or other
+	 *
+	 * @param other - Value to be compared with
+	 * @return the minimum BigInt
+	 */
+	BigInt min(BigInt other)
+	{
+		return this.isLessThan(other) ? this : other;
 	}
 
 	/**
@@ -795,8 +813,6 @@ public class BigInt implements BigIntInterface
 	 */
 	private int compareEachNumber(BigInt other)
 	{
-//		ArrayList<Integer> first = new ArrayList<>(this.numberArray);
-//		ArrayList<Integer> second = new ArrayList<>(other.numberArray);
 		return compareEachNumberForLoop(this.numberArray,other.numberArray);
 	}
 
@@ -820,9 +836,11 @@ public class BigInt implements BigIntInterface
 	 */
 	private int handleNegativeCases(BigInt other)
 	{
-		if(this.isCharged && !other.isCharged) return -1;
-		else if(!this.isCharged && other.isCharged) return 1;
-		else return compareEachNumber(other);
+		if(this.getLen(other) != 0) {
+			if (this.isCharged && !other.isCharged) return -1;
+			else if (!this.isCharged && other.isCharged) return 1;
+			return (this.isCharged && this.getLen(other) == 1) ? -1 : 1;
+		}else return compareEachNumber(other);
 	}
 
 	/**
@@ -834,6 +852,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private int getLen(BigInt other)
 	{
+		if(this.numberArray.size() == other.numberArray.size()) return 0;
 		return this.numberArray.size() > other.numberArray.size() ? 1 : -1;
 	}
 

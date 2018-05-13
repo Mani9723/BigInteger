@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.lang.StringBuilder;
 
 /**
- *
+ *Implements the BigIntInterface that requires that all classes have the same operations.
  * This {@link BigInt} class allows for basic arithmetic on large integers.
  * Primitive data types such as int,double,float,long can hold only so much.
  *

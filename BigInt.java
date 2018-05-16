@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.lang.StringBuilder;
 
 /**
- *Implements the BigIntInterface that requires that all classes have the same operations.
+ *
  * This {@link BigInt} class allows for basic arithmetic on large integers.
  * Primitive data types such as int,double,float,long can hold only so much.
  *
@@ -171,9 +171,9 @@ public class BigInt implements BigIntInterface
 	}
 
 	private BigInt()
-    {
-        //DEFAULT
-    }
+	{
+		//DEFAULT
+	}
 
 	/**
 	 * Private constructor that acts as an lightweight constructor
@@ -204,7 +204,8 @@ public class BigInt implements BigIntInterface
 		else if (signValue == '+' || signValue == '-') {
 			setSign(signValue);
 			return value.substring(1);
-		}return value;
+		}
+		return value;
 	}
 
 	/**
@@ -218,11 +219,10 @@ public class BigInt implements BigIntInterface
 	 */
 	private boolean isInputValid(String value) throws InvalidInputException
 	{
-		for (int i = 0; i < value.length(); i++) {
-			if (!Character.isDigit(value.charAt(i)))
-				throw new InvalidInputException(value.concat(" ")
-						.concat("Contains invalid Character"));
-		}return true;
+		if(!value.matches("^[0-9]+$"))
+			throw new InvalidInputException(value.concat(" ")
+					.concat("Contains invalid Character"));
+		return true;
 	}
 
 	/**
@@ -435,13 +435,11 @@ public class BigInt implements BigIntInterface
 	private ArrayList<Integer> positiveSubtractionCases(BigInt other)
 	{
 		reverse(this.numberArray,other.numberArray,null);
-		if(this.isLessThan(other)) {
-			reverse(this.numberArray, other.numberArray, null);
-			return negate(subtractAlgo(other.numberArray, this.numberArray));
-		} else {
-			reverse(this.numberArray, other.numberArray, null);
-			return subtractAlgo(this.numberArray, other.numberArray);
-		}
+		boolean lessThan = this.isLessThan(other);
+		reverse(this.numberArray,other.numberArray,null);
+
+		return lessThan ? negate(subtractAlgo(other.numberArray, this.numberArray))
+				: subtractAlgo(this.numberArray, other.numberArray);
 	}
 
 	/**
@@ -454,9 +452,9 @@ public class BigInt implements BigIntInterface
 	{
 		if(!this.isCharged )  // A - (-B) = A + B
 			return add(this.numberArray, negate(other.numberArray));
-		else if( other.isCharged)  	// -A - (-B) = -A + B = B - A
+		else if( other.isCharged) {    // -A - (-B) = -A + B = B - A
 			return negate(subtractAlgo(negate(this.numberArray), negate(other.numberArray)));
-		else   // -A - B = -(A + B)
+		} else   // -A - B = -(A + B)
 			return negate(add(negate(this.numberArray), other.numberArray));
 	}
 
@@ -490,7 +488,7 @@ public class BigInt implements BigIntInterface
 				borrow = 0;
 			}
 		}if(difference.get(difference.size()-1) == 0)
-			difference.remove(difference.size()-1);
+		difference.remove(difference.size()-1);
 
 		return difference;
 	}
@@ -548,10 +546,13 @@ public class BigInt implements BigIntInterface
 		if(multiplicand.size()==1 && multiplier.size()==1)
 			product.add(multiplicand.get(0)*multiplier.get(0));
 		else {
-			if (multiplicand.size() < multiplier.size())
-				product = actuallyMultiply(multiplier, multiplicand);
-			else
-				product = actuallyMultiply(multiplicand, multiplier);
+			product = multiplicand.size() < multiplier.size() ?
+					actuallyMultiply(multiplier, multiplicand)
+					:actuallyMultiply(multiplicand, multiplier);
+//			if (multiplicand.size() < multiplier.size())
+//				product = actuallyMultiply(multiplier, multiplicand);
+//			else
+//				product = actuallyMultiply(multiplicand, multiplier);
 			if(!(this.isCharged && other.isCharged)&&
 					(this.isCharged || other.isCharged)){
 				product = negate(product);
@@ -633,43 +634,58 @@ public class BigInt implements BigIntInterface
 		return firstProduct;
 	}
 
-
-	/**
-	 * Division method.
-	 * The goal is to division two large strings representation of Integers and produce
-	 * quotient. This is the most difficult of algorithm so far. Since the other operations
-	 * can be done with just a for-loop, this takes a little bit more thinking.
-	 *
-	 * @param other
-	 * @return
-	 */
 	public BigInt divideBy(BigInt other)
-    {
-        BigInt quotient = new BigInt();
-        reverse(this.numberArray,other.numberArray,null);
-       // quotient = new BigInt(divideHelper(other));
-        reverse(this.numberArray,other.numberArray,null);
-        return quotient;
-    }
+	{
+		return new BigInt();
+	}
 
-
-	/**
-	 * I want to do recursion
-	 *
-	 * divide()
-	 * Base Case: if(difference of dividend and divisor) < divisor
-	 *              quotient is found and the remainder is the difference
-	 *
-	 * Otherwise:
-	 *      increment #0f iteration = mod
-	 *      divide(subtract dividend - divisor)
-	 *
-	 *
-	 *
-	 *
-	 */
-
-
+//	/**
+//	 * Modulus method.
+//	 * The goal is to division two large strings representation of Integers and produce
+//	 * quotient. This is the most difficult of algorithm so far. Since the other operations
+//	 * can be done with just a for-loop, this takes a little bit more thinking.
+//	 *
+//	 * @param other - Divisor Object
+//	 * @return remainder
+//	 */
+//	public BigInt mod(BigInt other)
+//	{
+//		BigInt modulus;
+//		reverse(negate(this.numberArray),negate(other.numberArray),null);
+//		modulus = new BigInt(divideHelper(other));
+//		reverse(this.numberArray,other.numberArray,modulus.numberArray);
+//		return modulus;
+//	}
+//
+//	private ArrayList<Integer> divideHelper(BigInt other)
+//	{
+//		padArrayList(this.numberArray,other.numberArray);
+//		return divideRecursively(this.numberArray,other.numberArray);
+//	}
+//
+//
+//	/**
+//	 * I want to do recursion
+//	 *
+//	 *
+//	 * divide()
+//	 * Base Case: if(difference of dividend and divisor) < divisor
+//	 *              quotient is found and the remainder is the difference
+//	 *
+//	 * Otherwise:
+//	 *      increment #0f iteration = mod
+//	 *      divide(subtract dividend - divisor)
+//	 */
+//	private ArrayList<Integer> divideRecursively(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
+//	{
+//		padArrayList(dividend,divisor);
+//		ArrayList<Integer> difference = new ArrayList<>(subtractAlgo(dividend,divisor));
+//		padArrayList(difference,divisor);
+//		if(isLessThan(difference,divisor))
+//			return difference;
+//		return divideRecursively(difference,divisor);
+//
+//	}
 
 	/**
 	 * This method is the one tha compares the length of the ArrayList.
@@ -710,6 +726,16 @@ public class BigInt implements BigIntInterface
 	{
 		return this.compareTo(other) == -1;
 	}
+
+//	private boolean isLessThan(ArrayList<Integer> first, ArrayList<Integer> second)
+//	{
+//		return compareArrayLists(first,second) == -1;
+//	}
+
+//	private int compareArrayLists(ArrayList<Integer> first, ArrayList<Integer> second)
+//	{
+//		return compareEachNumberForLoop(first,second);
+//	}
 
 	/**
 	 * Returns true if both objects are equal to each other
@@ -754,7 +780,7 @@ public class BigInt implements BigIntInterface
 	 */
 	int compareTo(BigInt other)
 	{
-		return this.isEqualTo(other) ? 0 : separateAndCompare(other);
+		return this.isEqualTo(other) ? 0 : separatePosNegCompare(other);
 	}
 
 	/**
@@ -766,18 +792,12 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt object
 	 * @return int value 1,-1
 	 */
-	private int separateAndCompare(BigInt other)
+	private int separatePosNegCompare(BigInt other)
 	{
 		if(this.isCharged || other.isCharged) return handleNegativeCases(other);
 		else if(this.numberArray.size()==other.numberArray.size())
 			return compareEachNumber(other);
 		else return compareBasedOnLength(other);
-	}
-
-	private int compareArrayLists(ArrayList<Integer> first, ArrayList<Integer> second)
-	{
-		return first.size()==second.size() ? compareEachNumberForLoop(first,second)
-				: compareBasedOnLengthArrayList(first,second);
 	}
 
 	/**
@@ -791,17 +811,17 @@ public class BigInt implements BigIntInterface
 		return getLen(other) == 1 ? 1 : -1;
 	}
 
-	/**
-	 * This method takes ArrayList as a paramenter and is identical to
-	 * {@link #compareBasedOnLength(BigInt)}
-	 * @param first -ArrayList
-	 * @param second -ArrayList
-	 * @return 1 or -1
-	 */
-	private int compareBasedOnLengthArrayList(ArrayList first, ArrayList second)
-	{
-		return first.size()>second.size()? 1 : -1;
-	}
+//	/**
+//	 * This method takes ArrayList as a paramenter and is identical to
+//	 * {@link #compareBasedOnLength(BigInt)}
+//	 * @param first -ArrayList
+//	 * @param second -ArrayList
+//	 * @return 1 or -1
+//	 */
+//	private int compareBasedOnLengthArrayList(ArrayList first, ArrayList second)
+//	{
+//		return first.size()>second.size()? 1 : -1;
+//	}
 
 	/**
 	 * This method will be called if both arraylists are equal in length.
@@ -835,10 +855,11 @@ public class BigInt implements BigIntInterface
 	 */
 	private int handleNegativeCases(BigInt other)
 	{
-		if(this.getLen(other) != 0) {
+		int lenResult = this.getLen(other);
+		if(lenResult != 0) {
 			if (this.isCharged && !other.isCharged) return -1;
 			else if (!this.isCharged && other.isCharged) return 1;
-			return (this.isCharged && this.getLen(other) == 1) ? -1 : 1;
+			return (this.isCharged && lenResult == 1) ? -1 : 1;
 		}else return compareEachNumber(other);
 	}
 

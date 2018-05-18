@@ -2,6 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -549,10 +550,6 @@ public class BigInt implements BigIntInterface
 			product = multiplicand.size() < multiplier.size() ?
 					actuallyMultiply(multiplier, multiplicand)
 					:actuallyMultiply(multiplicand, multiplier);
-//			if (multiplicand.size() < multiplier.size())
-//				product = actuallyMultiply(multiplier, multiplicand);
-//			else
-//				product = actuallyMultiply(multiplicand, multiplier);
 			if(!(this.isCharged && other.isCharged)&&
 					(this.isCharged || other.isCharged)){
 				product = negate(product);
@@ -634,10 +631,10 @@ public class BigInt implements BigIntInterface
 		return firstProduct;
 	}
 
-	public BigInt divideBy(BigInt other)
-	{
-		return new BigInt();
-	}
+//	public BigInt divideBy(BigInt other)
+//	{
+//		return new BigInt();
+//	}
 
 //	/**
 //	 * Modulus method.
@@ -687,6 +684,82 @@ public class BigInt implements BigIntInterface
 //
 //	}
 
+	public BigInt divideBy(BigInt other)
+	{
+		BigInt quotient;
+		quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
+		return quotient;
+	}
+
+	private ArrayList<Integer> divideAlgo(ArrayList<Integer> divisor, ArrayList<Integer> dividend)
+	{
+		ArrayList<Integer> quotient = new ArrayList<>();
+		ArrayList<Integer> remainder;
+		ArrayList<Integer> tempDividend;
+		int lenDividend = dividend.size();
+
+		tempDividend = new ArrayList<>(findDividend(divisor,dividend,divisor.size()));
+		//quotient.add(findQuotientByMultiplying(tempDividend,divisor));
+
+		return null;
+	}
+
+
+	private ArrayList<Integer> findDividend(ArrayList<Integer> divisor, ArrayList<Integer> dividend,
+	                                        int divisorLen)
+	{
+		ArrayList<Integer> tempDividend = new ArrayList<>(dividend.subList(0,divisorLen));
+		int result = 1;
+		while(result == 1){
+			result = isLessThan(divisor,tempDividend);
+			if(result == 1){
+				tempDividend = new ArrayList<>(dividend.subList(0,divisorLen + 1));
+			}
+		}
+		return tempDividend;
+	}
+
+//	private int findQuotientByMultiplying(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
+//	{
+//		ArrayList<Integer> product, testQuo = new ArrayList<>();
+//		int index = 0, result = -1;
+//		while(result == -1){
+//			testQuo.add(getArrayValForMultiply(index));
+//			product = new ArrayList<>(actuallyMultiply(testQuo,dividend));
+//			result = isLessThan(product,dividend);
+//
+//		}
+//
+//
+//	}
+
+	private int getArrayValForMultiply(int index)
+	{
+		int[] val = {1,2,3,4,5,6,7,8,9};
+		return val[index];
+	}
+
+	public static void main(String[] args) {
+		BigInt b1 = new BigInt("2");
+		BigInt b2 = new BigInt("123");
+		b1.divideBy(b2);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	/**
 	 * This method is the one tha compares the length of the ArrayList.
 	 * The helper method {@link #addZerosToTheFrontOfPartialSum(ArrayList, int)}
@@ -727,10 +800,11 @@ public class BigInt implements BigIntInterface
 		return this.compareTo(other) == -1;
 	}
 
-//	private boolean isLessThan(ArrayList<Integer> first, ArrayList<Integer> second)
-//	{
-//		return compareArrayLists(first,second) == -1;
-//	}
+	private int isLessThan(ArrayList<Integer> first, ArrayList<Integer> second)
+	{
+		return first.size() != second.size() ? compareBasedOnLengthArrayList(first,second)
+				: compareEachNumberForLoop(first,second);
+	}
 
 //	private int compareArrayLists(ArrayList<Integer> first, ArrayList<Integer> second)
 //	{
@@ -811,17 +885,17 @@ public class BigInt implements BigIntInterface
 		return getLen(other) == 1 ? 1 : -1;
 	}
 
-//	/**
-//	 * This method takes ArrayList as a paramenter and is identical to
-//	 * {@link #compareBasedOnLength(BigInt)}
-//	 * @param first -ArrayList
-//	 * @param second -ArrayList
-//	 * @return 1 or -1
-//	 */
-//	private int compareBasedOnLengthArrayList(ArrayList first, ArrayList second)
-//	{
-//		return first.size()>second.size()? 1 : -1;
-//	}
+	/**
+	 * This method takes ArrayList as a paramenter and is identical to
+	 * {@link #compareBasedOnLength(BigInt)}
+	 * @param first -ArrayList
+	 * @param second -ArrayList
+	 * @return 1 or -1
+	 */
+	private int compareBasedOnLengthArrayList(ArrayList first, ArrayList second)
+	{
+		return first.size()>second.size()? 1 : -1;
+	}
 
 	/**
 	 * This method will be called if both arraylists are equal in length.

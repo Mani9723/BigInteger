@@ -1,5 +1,6 @@
 package RevisedBigInt;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -12,9 +13,8 @@ public class BigIntTest
 	@Test
 	public void testSub()
 	{
-		long beg = System.currentTimeMillis();
-		assertEquals("-988", new BigInt("1").subtract(new BigInt("989")).toString());
-		System.out.println(System.currentTimeMillis()-beg);
+		assertEquals("-988", new BigInt("1")
+				.subtract(new BigInt("989")).toString());
 	}
 
 	@Test
@@ -771,7 +771,7 @@ public class BigIntTest
 		b2 = new BigInt("-9876823456787654321");
 		assertEquals(b2,b1.max(b2));
 	}
-@Test
+	@Test
 	public void textMinimum()
 	{
 		b1 = new BigInt("12345678987654321");
@@ -819,6 +819,55 @@ public class BigIntTest
 		assertEquals(b1,b1.min(b2));
 	}
 
-
+	@Ignore
+	@Test
+	public void testDivideV1()
+	{
+		b1 = new BigInt("11");
+		b2 = new BigInt("2");
+//		b3 = b1.mod(b2);
+		assertEquals("1",b3.toString());
+	}
+	//@Ignore
+	@Test
+	public void testDivideV2()
+	{
+		b1 = new BigInt("124567");
+		b2 = new BigInt("123");
+		b3 = b1.divideBy(b2);
+		assertEquals("1012",b3.toString());
+	}
+	@Test
+	public void testDivideV3()
+	{
+		b1 = new BigInt("10");
+		b2 = new BigInt("2");
+		b3 = b1.divideBy(b2);
+		assertEquals("5",b3.toString());
+	}
+	@Test
+	public void testDivideV4()
+	{
+		b1 = new BigInt("24356789654356788765435678765434567876543245675");
+		b2 = new BigInt("24356789654356788765435678765434567876543245675");
+		b3 = b1.divideBy(b2);
+		assertEquals("1",b3.toString());
+	}
+	@Test
+	public void testDivideV5()
+	{
+		b1 = new BigInt("24356784356788765435678765434567876543245675");
+		b2 = new BigInt("24356789654356788765435678765434567876543245675");
+		b3 = b1.divideBy(b2);
+		assertEquals("0",b3.toString());
+	}
+	@Test
+	public void testDivideV6()
+	{
+		b1 = new BigInt("-24356784356788765435678765434567876543245675");
+		b2 = new BigInt("24356789654356788765435678765434567876543245675");
+		b3 = b1.divideBy(b2);
+		assertEquals("0",b3.toString());
+	}
 
 }

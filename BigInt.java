@@ -2,7 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
-import java.math.BigInteger;
+//import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -659,6 +659,8 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * The division algorithm
+	 * This algorithm emmulates the traditional long division approach.
+	 * Since the original
 	 *
 	 * @param dividend - Dividend
 	 * @param divisor - Divisor

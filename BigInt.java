@@ -2,6 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -630,59 +631,21 @@ public class BigInt implements BigIntInterface
 		return firstProduct;
 	}
 
-//	public BigInt divideBy(BigInt other)
-//	{
-//		return new BigInt();
-//	}
 
-//	/**
-//	 * Modulus method.
-//	 * The goal is to division two large strings representation of Integers and produce
-//	 * quotient. This is the most difficult of algorithm so far. Since the other operations
-//	 * can be done with just a for-loop, this takes a little bit more thinking.
-//	 *
-//	 * @param other - Divisor Object
-//	 * @return remainder
-//	 */
-//	public BigInt mod(BigInt other)
-//	{
-//		BigInt modulus;
-//		reverse(negate(this.numberArray),negate(other.numberArray),null);
-//		modulus = new BigInt(divideHelper(other));
-//		reverse(this.numberArray,other.numberArray,modulus.numberArray);
-//		return modulus;
-//	}
-//
-//	private ArrayList<Integer> divideHelper(BigInt other)
-//	{
-//		padArrayList(this.numberArray,other.numberArray);
-//		return divideRecursively(this.numberArray,other.numberArray);
-//	}
-//
-//
-//	/**
-//	 * I want to do recursion
-//	 *
-//	 *
-//	 * divide()
-//	 * Base Case: if(difference of dividend and divisor) < divisor
-//	 *              quotient is found and the remainder is the difference
-//	 *
-//	 * Otherwise:
-//	 *      increment #0f iteration = mod
-//	 *      divide(subtract dividend - divisor)
-//	 */
-//	private ArrayList<Integer> divideRecursively(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
-//	{
-//		padArrayList(dividend,divisor);
-//		ArrayList<Integer> difference = new ArrayList<>(subtractAlgo(dividend,divisor));
-//		padArrayList(difference,divisor);
-//		if(isLessThan(difference,divisor))
-//			return difference;
-//		return divideRecursively(difference,divisor);
-//
-//	}
-
+	/**
+	 * Divides two arbritarily large BigInt object (this/other)
+	 * Since this is not an integer division, the whole process
+	 * become a bit complicated because you essentially have
+	 * code so that the computer knows how to divided.
+	 *
+	 * The algorithm is identical to the traditional
+	 * long division approach because that is the most sensible
+	 * way to tackle this problem at the moment.
+	 *
+	 * A number of helper methods are used to complete this process
+	 * @param other BigInt object - divisor
+	 * @return this/other
+	 */
 	public BigInt divideBy(BigInt other)
 	{
 		BigInt quotient;
@@ -691,10 +654,16 @@ public class BigInt implements BigIntInterface
 			quotient = new BigInt("0");
 		else
 			quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
-
 		return quotient;
 	}
 
+	/**
+	 * The division algorithm
+	 *
+	 * @param dividend - Dividend
+	 * @param divisor - Divisor
+	 * @return quotient - ArrayList
+	 */
 	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
 	{
 		ArrayList<Integer> quotient = new ArrayList<>();
@@ -720,6 +689,11 @@ public class BigInt implements BigIntInterface
 		return quotient;
 	}
 
+	/**
+	 * Removes lading zeros that often results in after subtraction
+	 * Mainly used in the divison process.
+	 * @param tempDivd ArrayList without leading zeros
+	 */
 	private void removeLdZeroDiv(ArrayList<Integer> tempDivd) {
 		int index = 0;
 		int val = tempDivd.get(index);
@@ -729,7 +703,13 @@ public class BigInt implements BigIntInterface
 		}
 	}
 
-
+	/**
+	 *
+	 * @param divisor
+	 * @param dividend
+	 * @param divisorLen
+	 * @return
+	 */
 	private ArrayList<Integer> findDividend(ArrayList<Integer> divisor, ArrayList<Integer> dividend,
 	                                        int divisorLen)
 	{
@@ -744,13 +724,18 @@ public class BigInt implements BigIntInterface
 		return tempDividend;
 	}
 
+	/**
+	 *
+	 * @param divn
+	 * @param divs
+	 * @return
+	 */
 	private ArrayList<Integer> findQuoMult(ArrayList<Integer> divn, ArrayList<Integer> divs)
 	{
 		ArrayList<Integer> multiplier = new ArrayList<>(),
 				product = new ArrayList<>();
 		int result = 1, index = 0;
 		if(isLessThan(divn,divs) == -1){
-//			product = new ArrayList<>(divn);
 			product.add(0);
 		}else {
 			while (result == 1) {
@@ -771,6 +756,15 @@ public class BigInt implements BigIntInterface
 		return product;
 	}
 
+	/**
+	 * Since I implemented a division by multiplication algo for
+	 * {@link #divideBy(BigInt)} I had to multiply the divisor
+	 * by numbers 1-9 to get the right multiple.
+	 * This method gets the value stored at the given index
+	 *
+	 * @param index  index of desired element
+	 * @return 1 - 9 both inclusive
+	 */
 	private int getArrayValForMultiply(int index)
 	{
 		ArrayList<Integer> val =  new ArrayList<>(9);
@@ -825,11 +819,6 @@ public class BigInt implements BigIntInterface
 		return first.size() != second.size() ? compareBasedOnLengthArrayList(first,second)
 				: compareEachNumberForLoop(first,second);
 	}
-
-//	private int compareArrayLists(ArrayList<Integer> first, ArrayList<Integer> second)
-//	{
-//		return compareEachNumberForLoop(first,second);
-//	}
 
 	/**
 	 * Returns true if both objects are equal to each other

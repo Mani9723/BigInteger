@@ -2,7 +2,6 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.StringBuilder;
@@ -687,21 +686,47 @@ public class BigInt implements BigIntInterface
 	public BigInt divideBy(BigInt other)
 	{
 		BigInt quotient;
-		quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
+		if(this.isEqualTo(other)) quotient = new BigInt("1");
+		else if(this.isLessThan(other))
+			quotient = new BigInt("0");
+		else
+			quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
+
 		return quotient;
 	}
 
-	private ArrayList<Integer> divideAlgo(ArrayList<Integer> divisor, ArrayList<Integer> dividend)
+	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
 	{
 		ArrayList<Integer> quotient = new ArrayList<>();
-		ArrayList<Integer> remainder;
-		ArrayList<Integer> tempDividend;
-		int lenDividend = dividend.size();
+		ArrayList<Integer>  currDividend, tempDivd, product;
+		int lenDivisor = divisor.size();
+		int currIndexOrgDividend = 0;
 
-		tempDividend = new ArrayList<>(findDividend(divisor,dividend,divisor.size()));
-		//quotient.add(findQuotientByMultiplying(tempDividend,divisor));
+		currDividend = new ArrayList<>(findDividend(divisor,dividend,lenDivisor));
 
-		return null;
+		currIndexOrgDividend = currDividend.size()-1;
+
+		while(currIndexOrgDividend < dividend.size()){
+			product = new ArrayList<>(findQuoMult(currDividend,divisor));
+			quotient.add(product.get(product.size()-1));
+			if(product.size()>1) product.remove(product.size() -1);
+			tempDivd = new ArrayList<>(subtractAlgo(currDividend,product));
+			removeLdZeroDiv(tempDivd);
+			currIndexOrgDividend++;
+			currDividend = new ArrayList<>(tempDivd);
+			if(currIndexOrgDividend < dividend.size())
+				currDividend.add(dividend.get(currIndexOrgDividend));
+		}
+		return quotient;
+	}
+
+	private void removeLdZeroDiv(ArrayList<Integer> tempDivd) {
+		int index = 0;
+		int val = tempDivd.get(index);
+		while(val == 0){
+			tempDivd.remove(index);
+			val = tempDivd.get(index);
+		}
 	}
 
 
@@ -719,45 +744,40 @@ public class BigInt implements BigIntInterface
 		return tempDividend;
 	}
 
-//	private int findQuotientByMultiplying(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
-//	{
-//		ArrayList<Integer> product, testQuo = new ArrayList<>();
-//		int index = 0, result = -1;
-//		while(result == -1){
-//			testQuo.add(getArrayValForMultiply(index));
-//			product = new ArrayList<>(actuallyMultiply(testQuo,dividend));
-//			result = isLessThan(product,dividend);
-//
-//		}
-//
-//
-//	}
+	private ArrayList<Integer> findQuoMult(ArrayList<Integer> divn, ArrayList<Integer> divs)
+	{
+		ArrayList<Integer> multiplier = new ArrayList<>(),
+				product = new ArrayList<>();
+		int result = 1, index = 0;
+		if(isLessThan(divn,divs) == -1){
+//			product = new ArrayList<>(divn);
+			product.add(0);
+		}else {
+			while (result == 1) {
+				multiplier.clear();
+				multiplier.add(getArrayValForMultiply(index));
+				product = new ArrayList<>(actuallyMultiply(multiplier, divs));
+				result = isLessThan(divn, product);
+				index++;
+				if (result == -1) {
+					index -= 2;
+					multiplier.clear();
+					multiplier.add(getArrayValForMultiply(index));
+					product = new ArrayList<>(actuallyMultiply(multiplier, divs));
+				}
+			}
+			product.add(index + 1);
+		}
+		return product;
+	}
 
 	private int getArrayValForMultiply(int index)
 	{
-		int[] val = {1,2,3,4,5,6,7,8,9};
-		return val[index];
+		ArrayList<Integer> val =  new ArrayList<>(9);
+		val.add(1); val.add(2); val.add(3); val.add(4); val.add(5);
+		val.add(6); val.add(7); val.add(8); val.add(9);
+		return val.get(index);
 	}
-
-	public static void main(String[] args) {
-		BigInt b1 = new BigInt("2");
-		BigInt b2 = new BigInt("123");
-		b1.divideBy(b2);
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	/**

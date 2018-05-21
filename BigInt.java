@@ -2,9 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
-//import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.lang.StringBuilder;
 
 /**
@@ -169,11 +167,6 @@ public class BigInt implements BigIntInterface
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	}
-
-	private BigInt()
-	{
-		//DEFAULT
 	}
 
 	/**
@@ -588,31 +581,36 @@ public class BigInt implements BigIntInterface
 		int carry = 0, tempProduct;
 		ArrayList<Integer> product = new ArrayList<>(), firstProduct = new ArrayList<>(),
 				partialSum = new ArrayList<>();
-
-		for(int i = 0 ; i < multiplier.size();i++) {
-			if(i>0) firstProduct = new ArrayList<>(addZerosToTheFrontOfPartialSum(firstProduct,i));
-			partialSum.clear();
-			for (Integer multiplied : multiplicand) {
-				tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
-				if (tempProduct >= 10) {
-					carry = tempProduct / 10;
-					firstProduct.add(tempProduct % 10);
+		if(multiplicand.size() == 1 && multiplier.size() == 1){
+			product = new ArrayList<>(specialSingleDigitMultCase(multiplicand,multiplier));
+		} else {
+			for (int i = 0; i < multiplier.size(); i++) {
+				if (i > 0) firstProduct = new ArrayList<>(addZerosToTheFrontOfPartialSum(firstProduct, i));
+				partialSum.clear();
+				for (Integer multiplied : multiplicand) {
+					tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
+					if (tempProduct >= 10) {
+						carry = tempProduct / 10;
+						firstProduct.add(tempProduct % 10);
+					} else {
+						firstProduct.add(tempProduct);
+						carry = 0;
+					}
+				}
+				if (carry != 0) firstProduct.add(carry);
+				carry = 0;
+				if (i == 0) {
+					product = new ArrayList<>(firstProduct);
+					firstProduct.clear();
 				} else {
-					firstProduct.add(tempProduct);
-					carry = 0;
+					partialSum = new ArrayList<>(product);
+					product.clear();
+					product = new ArrayList<>(add(firstProduct, partialSum));
+					firstProduct.clear();
 				}
 			}
-			if(carry!=0) firstProduct.add(carry); carry = 0;
-			if(i==0) {
-				product = new ArrayList<>(firstProduct);
-				firstProduct.clear();
-			} else {
-				partialSum = new ArrayList<>(product);
-				product.clear();
-				product = new ArrayList<>(add(firstProduct, partialSum));
-				firstProduct.clear();
-			}
-		}return product;
+		}
+		return product;
 	}
 
 	/**
@@ -631,36 +629,188 @@ public class BigInt implements BigIntInterface
 		return firstProduct;
 	}
 
+	/**
+	 * Special Case for single digit multliplication that was only written to help
+	 * the division method.
+	 * This method is used to find the product that will ultimately
+	 * be store in a LinkedHashMap.
+	 * @param first - multiplicand
+	 * @param second - multiplier
+	 * @return the product as an arraylist
+	 */
+	private ArrayList<Integer> specialSingleDigitMultCase(ArrayList<Integer> first, ArrayList<Integer> second)
+	{
+		int product = (first.get(0) * second.get(0));
+		ArrayList<Integer> newProd = new ArrayList<>(2);
+		if(product >= 10){
+			newProd.add(product/10);
+			newProd.add(product%10);
+		} else newProd.add(product);
+		Collections.reverse(newProd);
+		return newProd;
+
+	}
 
 	/**
 	 * Divides two arbritarily large BigInt object (this/other)
 	 * Since this is not an integer division, the whole process
 	 * become a bit complicated because you essentially have
-	 * code so that the computer knows how to divided.
-	 *
+	 * code so that the computer knows how to divided
 	 * The algorithm is identical to the traditional
 	 * long division approach because that is the most sensible
 	 * way to tackle this problem at the moment.
-	 *
 	 * A number of helper methods are used to complete this process
+	 *
+	 * This takes case of cases where no division is required
+	 * such as a/1 == a, if {@code a < b} == 0 since its integer division.
+	 *
+	 * Calls {@link #handleGeneralDivCases(BigInt)} that handles all cases
+	 *
 	 * @param other BigInt object - divisor
 	 * @return this/other
 	 */
 	public BigInt divideBy(BigInt other)
 	{
-		BigInt quotient;
-		if(this.isEqualTo(other)) quotient = new BigInt("1");
-		else if(this.isLessThan(other))
-			quotient = new BigInt("0");
-		else
-			quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
-		return quotient;
+		return handleGeneralDivCases(other);
 	}
 
 	/**
-	 * The division algorithm
-	 * This algorithm emmulates the traditional long division approach.
-	 * Since the original
+	 * This method handles all types of division cases that might occur
+	 *
+	 * @param other - BigInt divisor
+	 * @return BigInt Object representing quotient
+	 */
+	private BigInt handleGeneralDivCases(BigInt other)
+	{
+		BigInt quotient;
+		if(this.isEqualTo(other))
+			quotient = new BigInt("1");
+		else if(this.isLessThan(other))
+			quotient = new BigInt("0");
+		else if(this.numberArray.size()==other.numberArray.size()) {
+			if (handleZeroResult(other).equals("0"))
+				quotient = new BigInt(handleZeroResult(other));
+			else
+				quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
+		}
+		else if(this.isCharged || other.isCharged)
+			quotient = new BigInt(handleNegDivCases(other));
+		else
+			quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
+		return  quotient;
+	}
+	/**
+	 * The goal is to handle cases where the dividend is less than the divisor.
+	 * Since this is integer division, the result will be 0 so this will
+	 * first negate any negative arraylists then compare the two arrayLists.
+	 * If the this.numberArray is less than other.numberArray then the return
+	 * String will be 0. That result will be passed through the {@link #BigInt(String)}
+	 * constructor that accepts string arguments.
+	 *
+	 * @param other - BigInt object
+	 * @return - "0" if true or "-1" if false
+	 */
+	private String handleZeroResult(BigInt other)
+	{
+		String zero = "0";
+		int result;
+		boolean yes = false;
+		if(this.isCharged && !other.isCharged){
+			negate(this.numberArray);
+			result = isLessThan(this.numberArray,other.numberArray);
+			if(result == -1){
+				yes = true;
+			}
+		} else {
+			negate(other.numberArray);
+			result = isLessThan(this.numberArray,other.numberArray);
+			if(result == -1) yes = true;
+		}
+		if(yes)
+			return zero;
+		else return "-1";
+	}
+
+	/**
+	 * Handles division cases where either or both (this or other) is negative
+	 * For example:
+	 * <table border = "1" cellPadding = "1">
+	 *     <tr>
+	 *         <td>a/-b</td>
+	 *         <td>==</td>
+	 *         <td>-c</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>-a/b</td>
+	 *         <td>==</td>
+	 *         <td>-c</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>-a/-b</td>
+	 *         <td>==</td>
+	 *         <td>c</td>
+	 *     </tr>
+	 * </table>
+	 * @param other - BigInt other
+	 * @return +-a/+-b as an {@code ArrayList<Integer>}
+	 */
+	private ArrayList<Integer> handleNegDivCases(BigInt other) {
+		if (this.isCharged && other.isCharged)
+			return negate(divideAlgo(negate(this.numberArray), negate(other.numberArray)));
+		else if (this.isCharged) {
+			return negate(divideAlgo(negate(this.numberArray), other.numberArray));
+		} else
+			return negate(divideAlgo(this.numberArray, negate(other.numberArray)));
+	}
+
+	/**
+	 * The division algorithm.
+	 *
+	 * This algorithm replicates the long division proccess.
+	 * My original intent was to divide by subtracting recursively.
+	 * However, I ran into the problem of not being able to keep track of the
+	 * number of times the recursive step was taken, which would have been the
+	 * quotient and the remaining difference would have been the modulus value.
+	 *
+	 * So I used the long division approach.
+	 * When doing long division, first the dividend has to be equal to or greater than
+	 * the divisor. That process is handled only at the beginning by a separate method
+	 * {@link #findDividend(ArrayList, ArrayList)}. After that you try to find
+	 * the multiple that is equal to or less than the current dividend then get the
+	 * difference. Then next number in  the dividend is brought "down" and becomes the
+	 * value in the ones place.
+	 *
+	 * That process is repeated until the end of the originial dividend is out of numbers.
+	 *
+	 * The obvious problem and the most time consuming is the part where you have
+	 * to find the the multiple of the divisor that is less than or equal to the
+	 * current dividend. Now, the only options for the quotient are 0-9 both inclusive.
+	 * So originally you would have to multiply by 1,2,3... until the desired multiple
+	 * is found. To keep repeating that process is a waste of computing power.
+	 *
+	 * The solution to that problem is to realize a key fact. Each time you are multipling
+	 * te divisor by 1-9 you get the same 9 set of values that you will be comparing the
+	 * dividend with. So why not do it dynamically where those nine values are stored in
+	 * some kind of table and all that needs to be done afterwards is to go through the table
+	 * and see which value is the proper value.
+	 *
+	 * Another problem arises. What data structure to use for this table. One thing to keep
+	 * in mind is that the numbers 0-9 represents the quotient of that particular dividend.
+	 * So that number is necessary because its the answer. This fact actually narrows the
+	 * choices for the correct data structure significantly because now the values are in the
+	 * form of (quotient, multiple) or (key,value). That Observation limits the data
+	 * strucures in the Map area. Order is important so {@link LinkedHashMap} data structure
+	 * was used to keep track of the quotient and the multiples.
+	 *
+	 * LinkedHashMap keeps the insertion order which is important because that makes
+	 * the lookUp process have a constant O(n) time.
+	 *
+	 * So the only remaining part that is left is the rest of the process.
+	 * Once the quotient is found that value is added to the arraylist that represents
+	 * the quotient.
+	 * The current dividend - product(divisor*quotient) == new dividend. THe next number is
+	 * brought "down" and added at the end of the new dividend.
+	 * Repeated until the original dividend is out of numbers.
 	 *
 	 * @param dividend - Dividend
 	 * @param divisor - Divisor
@@ -668,29 +818,55 @@ public class BigInt implements BigIntInterface
 	 */
 	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
 	{
+		LinkedHashMap<Integer,ArrayList<Integer>> table = new LinkedHashMap<>(storeProductLHMap(divisor));
+
 		ArrayList<Integer> quotient = new ArrayList<>();
 		ArrayList<Integer>  currDividend, tempDivd, product;
-		int lenDivisor = divisor.size();
-		int currIndexOrgDividend = 0;
 
-		currDividend = new ArrayList<>(findDividend(divisor,dividend,lenDivisor));
-
-		currIndexOrgDividend = currDividend.size()-1;
+		currDividend = new ArrayList<>(findDividend(divisor,dividend));
+		int currIndexOrgDividend = currDividend.size()-1;
 
 		while(currIndexOrgDividend < dividend.size()){
-			product = new ArrayList<>(findQuoMult(currDividend,divisor));
+			product = new ArrayList<>(findQuotient(table,currDividend));
 			quotient.add(product.get(product.size()-1));
 			if(product.size()>1) product.remove(product.size() -1);
+			reverse(currDividend,product,null);
 			tempDivd = new ArrayList<>(subtractAlgo(currDividend,product));
-			removeLdZeroDiv(tempDivd);
+			reverse(currDividend,product,tempDivd);
+			if(tempDivd.size()>1) removeLdZeroDiv(tempDivd);
 			currIndexOrgDividend++;
 			currDividend = new ArrayList<>(tempDivd);
-			if(currIndexOrgDividend < dividend.size())
+			if(currIndexOrgDividend < dividend.size()) {
+				if (currDividend.size()==1 && currDividend.get(0) == 0)
+					currDividend.remove(0);
 				currDividend.add(dividend.get(currIndexOrgDividend));
+			}
 		}
 		return quotient;
 	}
 
+	/**
+	 * Is only called once during the begining of the division process.
+	 * To make the process quicker, the search for the dividend starts with
+	 * the first trial value of the dividend the same length as the divisor.
+	 * This will guarentee that at most only two repetition will be needed.
+	 *
+	 * @param divisor - fixed arraylist
+	 * @param dividend - flexible, values will be added until right one found
+	 * @return the proper {@code dividend >= divisor}
+	 */
+	private ArrayList<Integer> findDividend(ArrayList<Integer> divisor, ArrayList<Integer> dividend)
+	{
+		int divisorLen = divisor.size();
+		ArrayList<Integer> tempDividend = new ArrayList<>(dividend.subList(0,divisorLen));
+		int result = 1;
+		while(result == 1){
+			result = isLessThan(divisor,tempDividend);
+			if(result == 1)
+				tempDividend = new ArrayList<>(dividend.subList(0,divisorLen + 1));
+		}
+		return tempDividend;
+	}
 	/**
 	 * Removes lading zeros that often results in after subtraction
 	 * Mainly used in the divison process.
@@ -706,75 +882,57 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 *
-	 * @param divisor
-	 * @param dividend
-	 * @param divisorLen
-	 * @return
+	 * The lookUp method that goes through the LinkedHashMap.
+	 * The index represents the quotient and the ArrayList represents
+	 * the product of the divisor and the index.
+	 * @param divn - Dividend
+	 * @return ArrayList that represents product and the last value represents quotient.
 	 */
-	private ArrayList<Integer> findDividend(ArrayList<Integer> divisor, ArrayList<Integer> dividend,
-	                                        int divisorLen)
+	private ArrayList<Integer> findQuotient(LinkedHashMap<Integer,ArrayList<Integer>> table,
+	                                        ArrayList<Integer> divn)
 	{
-		ArrayList<Integer> tempDividend = new ArrayList<>(dividend.subList(0,divisorLen));
-		int result = 1;
-		while(result == 1){
-			result = isLessThan(divisor,tempDividend);
-			if(result == 1){
-				tempDividend = new ArrayList<>(dividend.subList(0,divisorLen + 1));
-			}
-		}
-		return tempDividend;
-	}
-
-	/**
-	 *
-	 * @param divn
-	 * @param divs
-	 * @return
-	 */
-	private ArrayList<Integer> findQuoMult(ArrayList<Integer> divn, ArrayList<Integer> divs)
-	{
-		ArrayList<Integer> multiplier = new ArrayList<>(),
-				product = new ArrayList<>();
-		int result = 1, index = 0;
-		if(isLessThan(divn,divs) == -1){
+		ArrayList<Integer> product = new ArrayList<>();
+		int index = 1, result = 1;
+		if(isLessThan(divn,table.get(1))==-1)
 			product.add(0);
-		}else {
-			while (result == 1) {
-				multiplier.clear();
-				multiplier.add(getArrayValForMultiply(index));
-				product = new ArrayList<>(actuallyMultiply(multiplier, divs));
-				result = isLessThan(divn, product);
-				index++;
-				if (result == -1) {
-					index -= 2;
-					multiplier.clear();
-					multiplier.add(getArrayValForMultiply(index));
-					product = new ArrayList<>(actuallyMultiply(multiplier, divs));
-				}
+		else {
+			while (result == 1 && index < 10) {
+				result = isLessThan(divn, table.get(index));
+				if (result == 1) ++index;
 			}
-			product.add(index + 1);
+			if (result == -1 || index == 10) --index;
+			product = new ArrayList<>(table.get(index));
+			product.add(index);
 		}
 		return product;
 	}
 
 	/**
-	 * Since I implemented a division by multiplication algo for
-	 * {@link #divideBy(BigInt)} I had to multiply the divisor
-	 * by numbers 1-9 to get the right multiple.
-	 * This method gets the value stored at the given index
+	 * Creates the LinkedHashMap tables that contains the possible quotients
+	 * and the product of (divisor*possible quotient).
+	 * It reverses the divisor before multiplying because thats how
+	 * the {@link #actuallyMultiply(ArrayList, ArrayList)} algorithm was designed.
+	 * Uses the {@link Collections} class to reverse the divisor to and from the
+	 * original position.
 	 *
-	 * @param index  index of desired element
-	 * @return 1 - 9 both inclusive
+	 * @param divisor - divisor that will be multiplied
+	 * @return LinkedHashMap table the for the lookUp.
 	 */
-	private int getArrayValForMultiply(int index)
+	private LinkedHashMap<Integer,ArrayList<Integer>> storeProductLHMap(ArrayList<Integer> divisor)
 	{
-		ArrayList<Integer> val =  new ArrayList<>(9);
-		val.add(1); val.add(2); val.add(3); val.add(4); val.add(5);
-		val.add(6); val.add(7); val.add(8); val.add(9);
-		return val.get(index);
+		LinkedHashMap<Integer,ArrayList<Integer>> table = new LinkedHashMap<>();
+		ArrayList<Integer> val = new ArrayList<>(), tempProd;
+		ArrayList<Integer> divs = new ArrayList<>(divisor);
+		Collections.reverse(divs);
+		for(int i = 1; i<=9; i++) {
+			val.add(i);
+			tempProd = new ArrayList<>(actuallyMultiply(divs,val));
+			Collections.reverse(tempProd);
+			table.put(i,tempProd);
+			val.remove(0);
+		}
+		return table;
 	}
-
 
 	/**
 	 * This method is the one tha compares the length of the ArrayList.
@@ -816,10 +974,30 @@ public class BigInt implements BigIntInterface
 		return this.compareTo(other) == -1;
 	}
 
+	/**
+	 * Private version of {@link #isLessThan(BigInt)} that accepts two arraylists
+	 * as argument rather than a BigInt object. Mostly to aid the the
+	 * comparisons done during the arithmetic.
+	 *
+	 * Catches a {@link NullPointerException} if one the arraylists being compared is null.
+	 * @param first
+	 *  ArrayList
+	 * @param second
+	 *  ArrayList
+	 * @return 1 {@code a > b}, 2 {@code a < b}, 0 {@code a==b}
+	 */
 	private int isLessThan(ArrayList<Integer> first, ArrayList<Integer> second)
 	{
-		return first.size() != second.size() ? compareBasedOnLengthArrayList(first,second)
-				: compareEachNumberForLoop(first,second);
+		try {
+			if (first.equals(second)) return 0;
+			else {
+				return first.size() != second.size() ? compareBasedOnLengthArrayList(first, second)
+						: compareEachNumberForLoop(first, second);
+			}
+		}catch (NullPointerException e){
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	/**
@@ -879,7 +1057,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private int separatePosNegCompare(BigInt other)
 	{
-		if(this.isCharged || other.isCharged) return handleNegativeCases(other);
+		if(this.isCharged || other.isCharged) return handleNegCompCases(other);
 		else if(this.numberArray.size()==other.numberArray.size())
 			return compareEachNumber(other);
 		else return compareBasedOnLength(other);
@@ -909,9 +1087,9 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * This method will be called if both arraylists are equal in length.
-	 * It will return an int value as soon as the for loop discovers
-	 * if  {@code a[i] < b[i]} or {@code a[i] > b[i]}.
+	 * Calls {@link #compareEachNumberForLoop(ArrayList, ArrayList)} to compare
+	 * each element
+	 *
 	 * @param other BigInt object
 	 * @return int 1,-1
 	 */
@@ -920,6 +1098,15 @@ public class BigInt implements BigIntInterface
 		return compareEachNumberForLoop(this.numberArray,other.numberArray);
 	}
 
+	/**
+	 * Only be called if a !=  b
+	 * This method will be called if both arraylists are equal in length.
+	 * It will return an int value as soon as the for loop discovers
+	 * if  {@code a[i] < b[i]} or {@code a[i] > b[i]}.
+	 * @param first - First ArrayList
+	 * @param second - SecondArrayList
+	 * @return {@code a > b} then 1 otherwise -1
+	 */
 	private int compareEachNumberForLoop(ArrayList<Integer> first, ArrayList<Integer> second)
 	{
 		int len = first.size();
@@ -928,6 +1115,7 @@ public class BigInt implements BigIntInterface
 			else if(second.get(i) > first.get(i)) break;
 		}return -1;
 	}
+
 	/**
 	 * This method handles comparison when either of the arraylist are negative.
 	 * {@code -A < B}
@@ -938,7 +1126,7 @@ public class BigInt implements BigIntInterface
 	 * @param other BigInt object
 	 * @return int 1,-1
 	 */
-	private int handleNegativeCases(BigInt other)
+	private int handleNegCompCases(BigInt other)
 	{
 		int lenResult = this.getLen(other);
 		if(lenResult != 0) {

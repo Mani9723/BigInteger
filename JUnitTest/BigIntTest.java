@@ -853,6 +853,7 @@ public class BigIntTest
 		b3 = b1.divideBy(b2);
 		assertEquals("1",b3.toString());
 	}
+	
 	@Test
 	public void testDivideV5()
 	{
@@ -869,5 +870,12 @@ public class BigIntTest
 		b3 = b1.divideBy(b2);
 		assertEquals("0",b3.toString());
 	}
+	@Test
+	public void testDivideV7()
+	{
+		b1 = new BigInt("723478");
+		b2 = new BigInt("-876543423");
+		b3 = b1.divideBy(b2);
+		assertEquals("-1",b3.toString());
 
 }

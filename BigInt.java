@@ -2,8 +2,11 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import java.lang.Math;
-import java.util.*;
 import java.lang.StringBuilder;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 
 /**
  *
@@ -124,12 +127,12 @@ import java.lang.StringBuilder;
 public class BigInt implements BigIntInterface
 {
 	/**
-	 * This private instance ArrayList {@code #numberArray} will hold the current
+	 * This private instance ArrayList {@code #list} will hold the current
 	 * arraylist that the BigInt object is referencing.
 	 * It is not initialized to any size at the moment.
 	 * I have opted not to use the ArrayList's minimum capacity feature.
 	 */
-	private ArrayList<Integer> numberArray = new ArrayList<>();
+	private ArrayList<Integer> list = new ArrayList<>();
 
 	/**
 	 * A private instance of a boolean {@code #isCharged} will
@@ -143,7 +146,7 @@ public class BigInt implements BigIntInterface
 	 * The Packacge Private main constructor accepts a string argument.
 	 * Since a string can be of arbritary length, only the memory of
 	 * the machine is the limiting factor.
-	 * This constructor initializes the main arraylist {@link #numberArray}
+	 * This constructor initializes the main arraylist {@link #list}
 	 * and handles the situations where the user enters bad data.
 	 *
 	 * In the event of an exception, the constructor will catch
@@ -153,15 +156,15 @@ public class BigInt implements BigIntInterface
 	 *
 	 * Otherwise the program will continue.
 	 *
-	 * @param userValue - The input provided by the user.
+	 * @param val - The input provided by the user.
 	 */
-	BigInt(String userValue)
+	BigInt(String val)
 	{
-		String absValue = verifySignAndMinLength(userValue);
+		String absValue = verifySignAndMinLength(val);
 
 		try {
 			if (isInputValid(absValue))
-				this.numberArray = new ArrayList<>(storeInArrayList(absValue));
+				this.list = new ArrayList<>(storeInArrayList(absValue));
 		} catch (InvalidInputException e) {
 			e.getMessage();
 			e.printStackTrace();
@@ -178,7 +181,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private BigInt(ArrayList<Integer> numberArray)
 	{
-		this.numberArray = numberArray;
+		this.list = numberArray;
 	}
 
 	/**
@@ -229,10 +232,10 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * Store the final approved String in the {@link #numberArray}
+	 * Store the final approved String in the {@link #list}
 	 * If negative the elements will be negated during parsing.
 	 * @param value - String to be stored in the ArrayList
-	 * @return the final ArrayList that will be assigned to {@link #numberArray}
+	 * @return the final ArrayList that will be assigned to {@link #list}
 	 */
 	private ArrayList<Integer> storeInArrayList(String value)
 	{
@@ -273,7 +276,7 @@ public class BigInt implements BigIntInterface
 	BigInt absValue()
 	{
 		return this.isCharged ?
-				new BigInt(this.negate(this.numberArray)) : this;
+				new BigInt(this.negate(this.list)) : this;
 
 	}
 
@@ -299,9 +302,9 @@ public class BigInt implements BigIntInterface
 	 */
 	public BigInt add(BigInt other)
 	{
-		reverse(this.numberArray,other.numberArray,null);
-		BigInt f = new BigInt(add(this.numberArray, other.numberArray));
-		reverse(this.numberArray,other.numberArray,f.numberArray);
+		reverse(this.list,other.list,null);
+		BigInt f = new BigInt(add(this.list, other.list));
+		reverse(this.list,other.list,f.list);
 		return f;
 	}
 
@@ -355,9 +358,9 @@ public class BigInt implements BigIntInterface
 	public BigInt subtract(BigInt other)
 	{
 		BigInt difference;
-		reverse(this.numberArray,other.numberArray,null);
+		reverse(this.list,other.list,null);
 		difference = new BigInt(subtractionByCases(other));
-		reverse(this.numberArray,other.numberArray,difference.numberArray);
+		reverse(this.list,other.list,difference.list);
 		return difference;
 	}
 
@@ -409,8 +412,8 @@ public class BigInt implements BigIntInterface
 	private ArrayList<Integer> subtractionByCases(BigInt other)
 	{
 		ArrayList<Integer> answer = new ArrayList<>();
-		if(this.numberArray.size() == 1 && other.numberArray.size() == 1)
-			answer.add(this.numberArray.get(0) - other.numberArray.get(0));
+		if(this.list.size() == 1 && other.list.size() == 1)
+			answer.add(this.list.get(0) - other.list.get(0));
 		else if(this.isCharged || other.isCharged)
 			answer = new ArrayList<>(negativeSubtractionCases(other));
 		else{
@@ -428,12 +431,12 @@ public class BigInt implements BigIntInterface
 	 */
 	private ArrayList<Integer> positiveSubtractionCases(BigInt other)
 	{
-		reverse(this.numberArray,other.numberArray,null);
+		reverse(this.list,other.list,null);
 		boolean lessThan = this.isLessThan(other);
-		reverse(this.numberArray,other.numberArray,null);
+		reverse(this.list,other.list,null);
 
-		return lessThan ? negate(subtractAlgo(other.numberArray, this.numberArray))
-				: subtractAlgo(this.numberArray, other.numberArray);
+		return lessThan ? negate(subtractAlgo(other.list, this.list))
+				: subtractAlgo(this.list, other.list);
 	}
 
 	/**
@@ -445,11 +448,11 @@ public class BigInt implements BigIntInterface
 	private ArrayList<Integer> negativeSubtractionCases(BigInt other)
 	{
 		if(!this.isCharged )  // A - (-B) = A + B
-			return add(this.numberArray, negate(other.numberArray));
+			return add(this.list, negate(other.list));
 		else if( other.isCharged) {    // -A - (-B) = -A + B = B - A
-			return negate(subtractAlgo(negate(this.numberArray), negate(other.numberArray)));
+			return negate(subtractAlgo(negate(this.list), negate(other.list)));
 		} else   // -A - B = -(A + B)
-			return negate(add(negate(this.numberArray), other.numberArray));
+			return negate(add(negate(this.list), other.list));
 	}
 
 	/**
@@ -503,9 +506,9 @@ public class BigInt implements BigIntInterface
 	public BigInt multiply(BigInt other)
 	{
 		BigInt product;
-		reverse(this.numberArray,other.numberArray,null);
-		product = new BigInt(multiplyByCases(other,this.numberArray,other.numberArray));
-		reverse(this.numberArray,other.numberArray,product.numberArray);
+		reverse(this.list,other.list,null);
+		product = new BigInt(multiplyByCases(other,this.list,other.list));
+		reverse(this.list,other.list,product.list);
 		return product;
 
 	}
@@ -671,67 +674,20 @@ public class BigInt implements BigIntInterface
 	 */
 	public BigInt divideBy(BigInt other)
 	{
-		return handleGeneralDivCases(other);
+		BigInt quotient = handleGeneralDivCases(other);
+		if(!(this.isCharged && other.isCharged) && (this.isCharged||other.isCharged))
+			quotient = new BigInt(negate(quotient.list));
+		return quotient;
 	}
 
-	/**
-	 * This method handles all types of division cases that might occur
-	 *
-	 * @param other - BigInt divisor
-	 * @return BigInt Object representing quotient
-	 */
-	private BigInt handleGeneralDivCases(BigInt other)
-	{
-		BigInt quotient;
-		if(this.isEqualTo(other))
-			quotient = new BigInt("1");
-		else if(this.isLessThan(other))
-			quotient = new BigInt("0");
-		else if(this.numberArray.size()==other.numberArray.size()) {
-			if (handleZeroResult(other).equals("0"))
-				quotient = new BigInt(handleZeroResult(other));
-			else
-				quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
-		}
-		else if(this.isCharged || other.isCharged)
-			quotient = new BigInt(handleNegDivCases(other));
-		else
-			quotient = new BigInt(divideAlgo(this.numberArray,other.numberArray));
-		return  quotient;
-	}
 	/**
 	 * The goal is to handle cases where the dividend is less than the divisor.
 	 * Since this is integer division, the result will be 0 so this will
 	 * first negate any negative arraylists then compare the two arrayLists.
-	 * If the this.numberArray is less than other.numberArray then the return
+	 * If the this.list is less than other.list then the return
 	 * String will be 0. That result will be passed through the {@link #BigInt(String)}
 	 * constructor that accepts string arguments.
 	 *
-	 * @param other - BigInt object
-	 * @return - "0" if true or "-1" if false
-	 */
-	private String handleZeroResult(BigInt other)
-	{
-		String zero = "0";
-		int result;
-		boolean yes = false;
-		if(this.isCharged && !other.isCharged){
-			negate(this.numberArray);
-			result = isLessThan(this.numberArray,other.numberArray);
-			if(result == -1){
-				yes = true;
-			}
-		} else {
-			negate(other.numberArray);
-			result = isLessThan(this.numberArray,other.numberArray);
-			if(result == -1) yes = true;
-		}
-		if(yes)
-			return zero;
-		else return "-1";
-	}
-
-	/**
 	 * Handles division cases where either or both (this or other) is negative
 	 * For example:
 	 * <table border = "1" cellPadding = "1">
@@ -748,20 +704,76 @@ public class BigInt implements BigIntInterface
 	 *     <tr>
 	 *         <td>-a/-b</td>
 	 *         <td>==</td>
-	 *         <td>c</td>
-	 *     </tr>
-	 * </table>
-	 * @param other - BigInt other
-	 * @return +-a/+-b as an {@code ArrayList<Integer>}
+	 *
+	 * @param other - BigInt divisor
+	 * @return BigInt Object representing quotient
 	 */
-	private ArrayList<Integer> handleNegDivCases(BigInt other) {
-		if (this.isCharged && other.isCharged)
-			return negate(divideAlgo(negate(this.numberArray), negate(other.numberArray)));
-		else if (this.isCharged) {
-			return negate(divideAlgo(negate(this.numberArray), other.numberArray));
-		} else
-			return negate(divideAlgo(this.numberArray, negate(other.numberArray)));
+	private BigInt handleGeneralDivCases(BigInt other)
+	{
+		makeAbs(other);
+		if(this.list.equals(other.list))
+			return new BigInt("1");
+		else if(isLessThan(this.list,other.list) == -1)
+			return new BigInt("0");
+		else
+			return new BigInt(divideAlgo(this.list,other.list));
 	}
+
+	/**
+	 * Void method that sets the object to its
+	 * Absolute value format.
+	 * @param other BigInt object
+	 */
+	private void makeAbs(BigInt other)
+	{
+		if(this.isCharged){
+			this.list = negate(this.list);
+		}else if(other.isCharged)
+			other.list = negate(other.list);
+	}
+//	/**
+//	 * The goal is to handle cases where the dividend is less than the divisor.
+//	 * Since this is integer division, the result will be 0 so this will
+//	 * first negate any negative arraylists then compare the two arrayLists.
+//	 * If the this.list is less than other.list then the return
+//	 * String will be 0. That result will be passed through the {@link #BigInt(String)}
+//	 * constructor that accepts string arguments.
+//	 *
+//	 * @param other - BigInt object
+//	 * @return - "0" if true or "-1" if false
+//	 */
+//	private String handleZeroResult(BigInt other)
+//	{
+//		return other.toString();
+//	}
+
+//	/**
+//	 * Handles division cases where either or both (this or other) is negative
+//	 * For example:
+//	 * <table border = "1" cellPadding = "1">
+//	 *     <tr>
+//	 *         <td>a/-b</td>
+//	 *         <td>==</td>
+//	 *         <td>-c</td>
+//	 *     </tr>
+//	 *     <tr>
+//	 *         <td>-a/b</td>
+//	 *         <td>==</td>
+//	 *         <td>-c</td>
+//	 *     </tr>
+//	 *     <tr>
+//	 *         <td>-a/-b</td>
+//	 *         <td>==</td>
+//	 *         <td>c</td>
+//	 *     </tr>
+//	 * </table>
+//	 * @param other - BigInt other
+//	 * @return +-a/+-b as an {@code ArrayList<Integer>}
+//	 */
+//	private ArrayList<Integer> handleNegDivCases(BigInt other)
+//	{
+//		return new ArrayList<>();
+//	}
 
 	/**
 	 * The division algorithm.
@@ -1007,7 +1019,7 @@ public class BigInt implements BigIntInterface
 	 */
 	boolean isEqualTo(BigInt other)
 	{
-		return this.numberArray.equals(other.numberArray);
+		return this.list.equals(other.list);
 	}
 
 	/**
@@ -1058,7 +1070,7 @@ public class BigInt implements BigIntInterface
 	private int separatePosNegCompare(BigInt other)
 	{
 		if(this.isCharged || other.isCharged) return handleNegCompCases(other);
-		else if(this.numberArray.size()==other.numberArray.size())
+		else if(this.list.size()==other.list.size())
 			return compareEachNumber(other);
 		else return compareBasedOnLength(other);
 	}
@@ -1095,7 +1107,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private int compareEachNumber(BigInt other)
 	{
-		return compareEachNumberForLoop(this.numberArray,other.numberArray);
+		return compareEachNumberForLoop(this.list,other.list);
 	}
 
 	/**
@@ -1145,8 +1157,8 @@ public class BigInt implements BigIntInterface
 	 */
 	private int getLen(BigInt other)
 	{
-		if(this.numberArray.size() == other.numberArray.size()) return 0;
-		return this.numberArray.size() > other.numberArray.size() ? 1 : -1;
+		if(this.list.size() == other.list.size()) return 0;
+		return this.list.size() > other.list.size() ? 1 : -1;
 	}
 
 	/**
@@ -1173,7 +1185,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private void checkForNegativeNumbers()
 	{
-		for (Integer aNumberArray : this.numberArray) {
+		for (Integer aNumberArray : this.list) {
 			if (aNumberArray < 0) {
 				isCharged = true;
 				break;
@@ -1198,7 +1210,7 @@ public class BigInt implements BigIntInterface
 		checkForNegativeNumbers();
 		if(isCharged) stringBuilder.append('-');
 
-		for (Integer aNumberArray : this.numberArray)
+		for (Integer aNumberArray : this.list)
 			stringBuilder.append(Math.abs(aNumberArray));
 
 		String finalString = stringBuilder.toString();

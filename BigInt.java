@@ -228,8 +228,10 @@ public class BigInt implements BigIntInterface
 	 */
 	private void setSign(char signValue)
 	{
-		if (signValue == '-') isCharged = true;
+		if (signValue == '-')
+			isCharged = true;
 	}
+
 
 	/**
 	 * Store the final approved String in the {@link #list}
@@ -259,7 +261,7 @@ public class BigInt implements BigIntInterface
 	 * @param third - ArrayList. This can be null.
 	 */
 	private void reverse(ArrayList<Integer> numberArray, ArrayList<Integer> second,
-	                     ArrayList<Integer> third)
+						 ArrayList<Integer> third)
 	{
 		Collections.reverse(numberArray);
 		Collections.reverse(second);
@@ -536,8 +538,8 @@ public class BigInt implements BigIntInterface
 	 * @return The product as an ArrayList
 	 */
 	private ArrayList<Integer> multiplyByCases(BigInt other,
-	                                           ArrayList<Integer> multiplicand,
-	                                           ArrayList<Integer> multiplier)
+											   ArrayList<Integer> multiplicand,
+											   ArrayList<Integer> multiplier)
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		if(multiplicand.size()==1 && multiplier.size()==1)
@@ -664,7 +666,7 @@ public class BigInt implements BigIntInterface
 	 * This takes case of cases where no division is required
 	 * such as a/1 == a, if {@code a < b} == 0 since its integer division.
 	 *
-	 * Calls {@link #handleGeneralDivCases(BigInt)} that handles all cases
+	 * Calls {@link #handleDivCases(BigInt,boolean)} that handles all cases
 	 *
 	 * @param other BigInt object - divisor
 	 * @return this/other
@@ -672,12 +674,31 @@ public class BigInt implements BigIntInterface
 	public BigInt divideBy(BigInt other)
 	{
 		validateDivisor(other);
-		BigInt quotient = handleGeneralDivCases(other);
+		BigInt quotient = handleDivCases(other,false);
 		if(!(this.isCharged && other.isCharged) && (this.isCharged||other.isCharged))
 			quotient = new BigInt(negate(quotient.list));
 		return quotient;
 	}
 
+	/**
+	 * Modulo operation.
+	 * Will perform this%other.
+	 * Uses the division algorithm to find the modulo.
+	 * @param other - BigInt
+	 * @return this%mod as BigInt
+	 */
+	public BigInt mod(BigInt other)
+	{
+		validateDivisor(other);
+		BigInt mod = handleDivCases(other,true);
+		if(!(this.isCharged && other.isCharged) && (this.isCharged||other.isCharged)) {
+			int i = mod.list.get(0);
+			mod.list.remove(0);
+			mod.list.add(0, i * -1);
+			mod = new BigInt(mod.list);
+		}
+		return mod;
+	}
 	/**
 	 * Checks whether the divisor value is 0.
 	 * If this test passes, the division process
@@ -691,7 +712,7 @@ public class BigInt implements BigIntInterface
 	private void validateDivisor(BigInt other)
 	{
 		try{
-			validDivisor(other);
+			checkDivisor(other);
 		}catch (DivideByZeroException e){
 			e.getMessage();
 			e.printStackTrace();
@@ -706,7 +727,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - Object being tested
 	 * @throws DivideByZeroException - Exception that handle zero case
 	 */
-	private void validDivisor(BigInt other) throws DivideByZeroException
+	private void checkDivisor(BigInt other) throws DivideByZeroException
 	{
 		if(other.list.size()==1 && other.list.get(0) == 0)
 			throw new DivideByZeroException("Cannot Divide By Zero "+ other.toString());
@@ -740,15 +761,15 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt divisor
 	 * @return BigInt Object representing quotient
 	 */
-	private BigInt handleGeneralDivCases(BigInt other)
+	private BigInt handleDivCases(BigInt other,boolean mod)
 	{
 		makeAbs(other);
 		if(this.list.equals(other.list))
-			return new BigInt("1");
+			return mod ? new BigInt("0") : new BigInt("1");
 		else if(isLessThan(this.list,other.list) == -1)
-			return new BigInt("0");
+			return mod ? new BigInt(this.list) : new BigInt("0");
 		else
-			return new BigInt(divideAlgo(this.list,other.list));
+			return new BigInt(divideAlgo(this.list,other.list,mod));
 	}
 
 	/**
@@ -758,10 +779,10 @@ public class BigInt implements BigIntInterface
 	 */
 	private void makeAbs(BigInt other)
 	{
-		if(this.isCharged){
-			this.list = negate(this.list);
-		}else if(other.isCharged)
-			other.list = negate(other.list);
+		if(this.isCharged)
+			this.list = new ArrayList<>(negate(this.list));
+		if(other.isCharged)
+			other.list = new ArrayList<>(negate(other.list));
 	}
 //	/**
 //	 * The goal is to handle cases where the dividend is less than the divisor.
@@ -832,7 +853,7 @@ public class BigInt implements BigIntInterface
 	 * So originally you would have to multiply by 1,2,3... until the desired multiple
 	 * is found. To keep repeating that process is a waste of computing power.
 	 *
-	 * The solution to that problem is to realize a key fact. Each time you are multipling
+	 * The solution to that problem is to realize a key fact. Each time you are multiplying
 	 * te divisor by 1-9 you get the same 9 set of values that you will be comparing the
 	 * dividend with. So why not do it dynamically where those nine values are stored in
 	 * some kind of table and all that needs to be done afterwards is to go through the table
@@ -860,12 +881,12 @@ public class BigInt implements BigIntInterface
 	 * @param divisor - Divisor
 	 * @return quotient - ArrayList
 	 */
-	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
+	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor,
+	                                      boolean mod)
 	{
 		LinkedHashMap<Integer,ArrayList<Integer>> table = new LinkedHashMap<>(storeProductLHMap(divisor));
 
-		ArrayList<Integer> quotient = new ArrayList<>();
-		ArrayList<Integer>  currDividend, tempDivd, product;
+		ArrayList<Integer> quotient = new ArrayList<>(),currDividend, tempDivd, product;
 
 		currDividend = new ArrayList<>(findDividend(divisor,dividend));
 		int currIndexOrgDividend = currDividend.size()-1;
@@ -874,9 +895,7 @@ public class BigInt implements BigIntInterface
 			product = new ArrayList<>(findQuotient(table,currDividend));
 			quotient.add(product.get(product.size()-1));
 			if(product.size()>1) product.remove(product.size() -1);
-			reverse(currDividend,product,null);
-			tempDivd = new ArrayList<>(subtractAlgo(currDividend,product));
-			reverse(currDividend,product,tempDivd);
+			tempDivd = new ArrayList<>(getNewDividend(currDividend,product));
 			if(tempDivd.size()>1) removeLdZeroDiv(tempDivd);
 			currIndexOrgDividend++;
 			currDividend = new ArrayList<>(tempDivd);
@@ -886,7 +905,23 @@ public class BigInt implements BigIntInterface
 				currDividend.add(dividend.get(currIndexOrgDividend));
 			}
 		}
-		return quotient;
+		return mod ? currDividend : quotient;
+	}
+
+	@SafeVarargs
+	private final ArrayList<Integer> getNewDividend(ArrayList<Integer>... curr)
+	{
+		ArrayList<Integer> currDiv = new ArrayList<>(), product = new ArrayList<>();
+		int i =0;
+		for(ArrayList<Integer> array : curr){
+			if(i==0) currDiv = new ArrayList<>(array);
+			else if(i==1) product = new ArrayList<>(array);
+			++i;
+		}
+		reverse(currDiv,product,null);
+		ArrayList<Integer> newDiv = new ArrayList<>(subtractAlgo(currDiv,product));
+		reverse(currDiv,product,newDiv);
+		return newDiv;
 	}
 
 	/**
@@ -933,7 +968,7 @@ public class BigInt implements BigIntInterface
 	 * @return ArrayList that represents product and the last value represents quotient.
 	 */
 	private ArrayList<Integer> findQuotient(LinkedHashMap<Integer,ArrayList<Integer>> table,
-	                                        ArrayList<Integer> divn)
+											ArrayList<Integer> divn)
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		int index = 1, result = 1;

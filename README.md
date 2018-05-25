@@ -17,7 +17,6 @@ The following methods are are public and provided in this class:\
 - Equals
 - Comparison
 - toString
-\
 
 ## Dependencies
 

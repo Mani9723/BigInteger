@@ -1,9 +1,9 @@
 package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
+import RevisedBigInt.Exceptions.DivideByZeroException;
 import java.lang.Math;
 import java.lang.StringBuilder;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -584,35 +584,32 @@ public class BigInt implements BigIntInterface
 		int carry = 0, tempProduct;
 		ArrayList<Integer> product = new ArrayList<>(), firstProduct = new ArrayList<>(),
 				partialSum = new ArrayList<>();
-		if(multiplicand.size() == 1 && multiplier.size() == 1){
-			product = new ArrayList<>(specialSingleDigitMultCase(multiplicand,multiplier));
-		} else {
-			for (int i = 0; i < multiplier.size(); i++) {
-				if (i > 0) firstProduct = new ArrayList<>(addZerosToTheFrontOfPartialSum(firstProduct, i));
-				partialSum.clear();
-				for (Integer multiplied : multiplicand) {
-					tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
-					if (tempProduct >= 10) {
-						carry = tempProduct / 10;
-						firstProduct.add(tempProduct % 10);
-					} else {
-						firstProduct.add(tempProduct);
-						carry = 0;
-					}
-				}
-				if (carry != 0) firstProduct.add(carry);
-				carry = 0;
-				if (i == 0) {
-					product = new ArrayList<>(firstProduct);
-					firstProduct.clear();
+		for (int i = 0; i < multiplier.size(); i++) {
+			if (i > 0) firstProduct = new ArrayList<>(addZerosToTheFrontOfPartialSum(firstProduct, i));
+			partialSum.clear();
+			for (Integer multiplied : multiplicand) {
+				tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
+				if (tempProduct >= 10) {
+					carry = tempProduct / 10;
+					firstProduct.add(tempProduct % 10);
 				} else {
-					partialSum = new ArrayList<>(product);
-					product.clear();
-					product = new ArrayList<>(add(firstProduct, partialSum));
-					firstProduct.clear();
+					firstProduct.add(tempProduct);
+					carry = 0;
 				}
 			}
+			if (carry != 0) firstProduct.add(carry);
+			carry = 0;
+			if (i == 0) {
+				product = new ArrayList<>(firstProduct);
+				firstProduct.clear();
+			} else {
+				partialSum = new ArrayList<>(product);
+				product.clear();
+				product = new ArrayList<>(add(firstProduct, partialSum));
+				firstProduct.clear();
+			}
 		}
+
 		return product;
 	}
 
@@ -641,7 +638,7 @@ public class BigInt implements BigIntInterface
 	 * @param second - multiplier
 	 * @return the product as an arraylist
 	 */
-	private ArrayList<Integer> specialSingleDigitMultCase(ArrayList<Integer> first, ArrayList<Integer> second)
+	private ArrayList<Integer> singleDigitMultCase(ArrayList<Integer> first, ArrayList<Integer> second)
 	{
 		int product = (first.get(0) * second.get(0));
 		ArrayList<Integer> newProd = new ArrayList<>(2);
@@ -674,10 +671,45 @@ public class BigInt implements BigIntInterface
 	 */
 	public BigInt divideBy(BigInt other)
 	{
+		validateDivisor(other);
 		BigInt quotient = handleGeneralDivCases(other);
 		if(!(this.isCharged && other.isCharged) && (this.isCharged||other.isCharged))
 			quotient = new BigInt(negate(quotient.list));
 		return quotient;
+	}
+
+	/**
+	 * Checks whether the divisor value is 0.
+	 * If this test passes, the division process
+	 * moves forward.
+	 * Handles the situation is a try-catch block.
+	 * It will exit the program after printing the
+	 * message and the stacktrace.
+	 *
+	 * @param other - Object to be test for 0
+	 */
+	private void validateDivisor(BigInt other)
+	{
+		try{
+			validDivisor(other);
+		}catch (DivideByZeroException e){
+			e.getMessage();
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+
+	/**
+	 * Actually checks the arraylist if it only contains
+	 * 0 value. If so, then it will throw a {@link DivideByZeroException}
+	 * with a custom message.
+	 * @param other - Object being tested
+	 * @throws DivideByZeroException - Exception that handle zero case
+	 */
+	private void validDivisor(BigInt other) throws DivideByZeroException
+	{
+		if(other.list.size()==1 && other.list.get(0) == 0)
+			throw new DivideByZeroException("Cannot Divide By Zero "+ other.toString());
 	}
 
 	/**
@@ -938,12 +970,17 @@ public class BigInt implements BigIntInterface
 		Collections.reverse(divs);
 		for(int i = 1; i<=9; i++) {
 			val.add(i);
-			tempProd = new ArrayList<>(actuallyMultiply(divs,val));
+			tempProd = new ArrayList<>(getProduct(divs,val));
 			Collections.reverse(tempProd);
 			table.put(i,tempProd);
 			val.remove(0);
 		}
 		return table;
+	}
+	private ArrayList<Integer> getProduct(ArrayList<Integer> divs, ArrayList<Integer> val)
+	{
+		return divs.size()==1 && val.size()==1
+				? singleDigitMultCase(divs,val) : actuallyMultiply(divs,val);
 	}
 
 	/**

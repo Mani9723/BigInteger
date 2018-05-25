@@ -2,6 +2,8 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import RevisedBigInt.Exceptions.DivideByZeroException;
+
+import java.io.File;
 import java.lang.Math;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
@@ -173,6 +175,29 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * This constructor will take a File object as a parameter and retrieve the path
+	 * of that object. Once the path has been verified, we can proceed normally to
+	 * store the contents of the file into {@link #list}. {@link BigIntFileReader} class
+	 * is used to read the contents of the file and store it in a string. That string
+	 * is then returned through the toString method. The resulting string will then be
+	 * converted into the proper arraylist.
+	 * @param file - File Object representing the file to be read.
+	 */
+	BigInt(File file)
+	{
+		String path = file.getPath();
+		BigIntFileReader fileContents = new BigIntFileReader(path);
+		String number = fileContents.toString();
+		try {
+			if(isInputValid(number))
+				this.list = new ArrayList<>(storeInArrayList(number));
+		} catch (InvalidInputException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+
+	/**
 	 * Private constructor that acts as an lightweight constructor
 	 * whose only purpose is to hold temporary arraylist until the operation
 	 * on that arrayList has been created.
@@ -253,21 +278,14 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * Uses the {@link Collections} class's reverse method to reverse the ArrayLists
-	 * There are three parameters. The first two parameters are required whereas the
-	 * third arraylist can be null. The method will handle the null input.
-	 *
-	 * @param numberArray - ArrayList
-	 * @param second - ArrayList
-	 * @param third - ArrayList. This can be null.
+	 * It takes variable arguments of ArrayLists.
+	 * @param numberArray - n ArrayLists to be reversed
 	 */
-	private void reverse(ArrayList<Integer> numberArray, ArrayList<Integer> second,
-						 ArrayList<Integer> third)
+	@SafeVarargs
+	private final void reverse(ArrayList<Integer>...numberArray)
 	{
-		Collections.reverse(numberArray);
-		Collections.reverse(second);
-		if(third != null) {
-			Collections.reverse(third);
-		}
+		for(ArrayList arrayList : numberArray)
+			Collections.reverse(arrayList);
 	}
 
 	/**
@@ -304,7 +322,7 @@ public class BigInt implements BigIntInterface
 	 */
 	public BigInt add(BigInt other)
 	{
-		reverse(this.list,other.list,null);
+		reverse(this.list,other.list);
 		BigInt f = new BigInt(add(this.list, other.list));
 		reverse(this.list,other.list,f.list);
 		return f;
@@ -360,7 +378,7 @@ public class BigInt implements BigIntInterface
 	public BigInt subtract(BigInt other)
 	{
 		BigInt difference;
-		reverse(this.list,other.list,null);
+		reverse(this.list,other.list);
 		difference = new BigInt(subtractionByCases(other));
 		reverse(this.list,other.list,difference.list);
 		return difference;
@@ -433,9 +451,9 @@ public class BigInt implements BigIntInterface
 	 */
 	private ArrayList<Integer> positiveSubtractionCases(BigInt other)
 	{
-		reverse(this.list,other.list,null);
+		reverse(this.list,other.list);
 		boolean lessThan = this.isLessThan(other);
-		reverse(this.list,other.list,null);
+		reverse(this.list,other.list);
 
 		return lessThan ? negate(subtractAlgo(other.list, this.list))
 				: subtractAlgo(this.list, other.list);
@@ -508,7 +526,7 @@ public class BigInt implements BigIntInterface
 	public BigInt multiply(BigInt other)
 	{
 		BigInt product;
-		reverse(this.list,other.list,null);
+		reverse(this.list,other.list);
 		product = new BigInt(multiplyByCases(other,this.list,other.list));
 		reverse(this.list,other.list,product.list);
 		return product;
@@ -538,16 +556,16 @@ public class BigInt implements BigIntInterface
 	 * @return The product as an ArrayList
 	 */
 	private ArrayList<Integer> multiplyByCases(BigInt other,
-											   ArrayList<Integer> multiplicand,
-											   ArrayList<Integer> multiplier)
+	                                           ArrayList<Integer> multiplicand,
+	                                           ArrayList<Integer> multiplier)
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		if(multiplicand.size()==1 && multiplier.size()==1)
 			product.add(multiplicand.get(0)*multiplier.get(0));
 		else {
 			product = multiplicand.size() < multiplier.size() ?
-					actuallyMultiply(multiplier, multiplicand)
-					:actuallyMultiply(multiplicand, multiplier);
+					multplityAlgo(multiplier, multiplicand)
+					: multplityAlgo(multiplicand, multiplier);
 			if(!(this.isCharged && other.isCharged)&&
 					(this.isCharged || other.isCharged)){
 				product = negate(product);
@@ -557,7 +575,9 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * The actual multiplication algorithm. Borrows a lot from the addition with some
+	 * Multiplication algorithm
+	 *
+	 * Borrows a lot from the addition with some
 	 * cosmetic changes.
 	 * I had to use traditional multiplication method because all the other
 	 * algorithms such as the Karatsuba Algorithm relied on the fact that
@@ -581,7 +601,7 @@ public class BigInt implements BigIntInterface
 	 * @param multiplier - Second ArrayList
 	 * @return the product as ArrayList
 	 */
-	private ArrayList<Integer> actuallyMultiply(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
+	private ArrayList<Integer> multplityAlgo(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
 	{
 		int carry = 0, tempProduct;
 		ArrayList<Integer> product = new ArrayList<>(), firstProduct = new ArrayList<>(),
@@ -687,7 +707,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt
 	 * @return this%mod as BigInt
 	 */
-	public BigInt mod(BigInt other)
+	BigInt mod(BigInt other)
 	{
 		validateDivisor(other);
 		BigInt mod = handleDivCases(other,true);
@@ -743,7 +763,7 @@ public class BigInt implements BigIntInterface
 	 *
 	 * Handles division cases where either or both (this or other) is negative
 	 * For example:
-	 * <table border = "1" cellPadding = "1">
+	 * <table summary = "Cases" border = "1" cellPadding = "1">
 	 *     <tr>
 	 *         <td>a/-b</td>
 	 *         <td>==</td>
@@ -757,8 +777,9 @@ public class BigInt implements BigIntInterface
 	 *     <tr>
 	 *         <td>-a/-b</td>
 	 *         <td>==</td>
-	 *
+	 *</table>
 	 * @param other - BigInt divisor
+	 * @param mod - true if mod value was requested
 	 * @return BigInt Object representing quotient
 	 */
 	private BigInt handleDivCases(BigInt other,boolean mod)
@@ -843,7 +864,7 @@ public class BigInt implements BigIntInterface
 	 * {@link #findDividend(ArrayList, ArrayList)}. After that you try to find
 	 * the multiple that is equal to or less than the current dividend then get the
 	 * difference. Then next number in  the dividend is brought "down" and becomes the
-	 * value in the ones place.
+	 * value in the ones place. and that becomes the new dividend.
 	 *
 	 * That process is repeated until the end of the originial dividend is out of numbers.
 	 *
@@ -854,7 +875,7 @@ public class BigInt implements BigIntInterface
 	 * is found. To keep repeating that process is a waste of computing power.
 	 *
 	 * The solution to that problem is to realize a key fact. Each time you are multiplying
-	 * te divisor by 1-9 you get the same 9 set of values that you will be comparing the
+	 * the divisor by 1-9 you get the same 9 set of values that you will be comparing the
 	 * dividend with. So why not do it dynamically where those nine values are stored in
 	 * some kind of table and all that needs to be done afterwards is to go through the table
 	 * and see which value is the proper value.
@@ -864,11 +885,11 @@ public class BigInt implements BigIntInterface
 	 * So that number is necessary because its the answer. This fact actually narrows the
 	 * choices for the correct data structure significantly because now the values are in the
 	 * form of (quotient, multiple) or (key,value). That Observation limits the data
-	 * strucures in the Map area. Order is important so {@link LinkedHashMap} data structure
+	 * strucures in the Map/Table area. Order is important so {@link LinkedHashMap} data structure
 	 * was used to keep track of the quotient and the multiples.
 	 *
 	 * LinkedHashMap keeps the insertion order which is important because that makes
-	 * the lookUp process have a constant O(n) time.
+	 * the lookUp process have a constant time. Best case O(1), worst case O(9).
 	 *
 	 * So the only remaining part that is left is the rest of the process.
 	 * Once the quotient is found that value is added to the arraylist that represents
@@ -879,6 +900,7 @@ public class BigInt implements BigIntInterface
 	 *
 	 * @param dividend - Dividend
 	 * @param divisor - Divisor
+	 * @param mod - true if modulus was requested
 	 * @return quotient - ArrayList
 	 */
 	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor,
@@ -908,19 +930,18 @@ public class BigInt implements BigIntInterface
 		return mod ? currDividend : quotient;
 	}
 
+	/**
+	 * When you subtract a product from the partial dividend you get your new
+	 * dividend. This method replicates that process.
+	 * @param curr - Var Args of ArrayLists
+	 * @return Current - Product of Divisor and quotient
+	 */
 	@SafeVarargs
 	private final ArrayList<Integer> getNewDividend(ArrayList<Integer>... curr)
 	{
-		ArrayList<Integer> currDiv = new ArrayList<>(), product = new ArrayList<>();
-		int i =0;
-		for(ArrayList<Integer> array : curr){
-			if(i==0) currDiv = new ArrayList<>(array);
-			else if(i==1) product = new ArrayList<>(array);
-			++i;
-		}
-		reverse(currDiv,product,null);
-		ArrayList<Integer> newDiv = new ArrayList<>(subtractAlgo(currDiv,product));
-		reverse(currDiv,product,newDiv);
+		reverse(curr[0],curr[1]);
+		ArrayList<Integer> newDiv = new ArrayList<>(subtractAlgo(curr[0],curr[1]));
+		reverse(curr[0],curr[1],newDiv);
 		return newDiv;
 	}
 
@@ -928,11 +949,12 @@ public class BigInt implements BigIntInterface
 	 * Is only called once during the begining of the division process.
 	 * To make the process quicker, the search for the dividend starts with
 	 * the first trial value of the dividend the same length as the divisor.
-	 * This will guarentee that at most only two repetition will be needed.
+	 * This will guarantee that at most only two repetition will be needed.
 	 *
 	 * @param divisor - fixed arraylist
-	 * @param dividend - flexible, values will be added until right one found
-	 * @return the proper {@code dividend >= divisor}
+	 * @param dividend - flexible, values will be from the original dividend
+	 *                    added until right one found
+	 * @return the proper divided such that {@code dividend >= divisor}
 	 */
 	private ArrayList<Integer> findDividend(ArrayList<Integer> divisor, ArrayList<Integer> dividend)
 	{
@@ -965,10 +987,11 @@ public class BigInt implements BigIntInterface
 	 * The index represents the quotient and the ArrayList represents
 	 * the product of the divisor and the index.
 	 * @param divn - Dividend
+	 * @param table - LinkedHashMap Table that stores the possible quotients
 	 * @return ArrayList that represents product and the last value represents quotient.
 	 */
 	private ArrayList<Integer> findQuotient(LinkedHashMap<Integer,ArrayList<Integer>> table,
-											ArrayList<Integer> divn)
+	                                        ArrayList<Integer> divn)
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		int index = 1, result = 1;
@@ -990,7 +1013,7 @@ public class BigInt implements BigIntInterface
 	 * Creates the LinkedHashMap tables that contains the possible quotients
 	 * and the product of (divisor*possible quotient).
 	 * It reverses the divisor before multiplying because thats how
-	 * the {@link #actuallyMultiply(ArrayList, ArrayList)} algorithm was designed.
+	 * the {@link #multplityAlgo(ArrayList, ArrayList)} algorithm was designed.
 	 * Uses the {@link Collections} class to reverse the divisor to and from the
 	 * original position.
 	 *
@@ -1012,11 +1035,20 @@ public class BigInt implements BigIntInterface
 		}
 		return table;
 	}
-	private ArrayList<Integer> getProduct(ArrayList<Integer> divs, ArrayList<Integer> val)
-	{
-		return divs.size()==1 && val.size()==1
-				? singleDigitMultCase(divs,val) : actuallyMultiply(divs,val);
-	}
+
+	/**
+	 * Calculate divisor*(1-9), where 1-9 represents the quotient and the
+	 * product represents the new dividend
+	 * @param lists - varargs of ArrayLists.
+	 * @return Product
+	 */
+	@SafeVarargs
+	private final ArrayList<Integer> getProduct(ArrayList<Integer> ... lists)
+		{
+			return lists[0].size()==1 && lists[1].size()==1
+					? singleDigitMultCase(lists[0],lists[1])
+					: multplityAlgo(lists[0],lists[1]);
+		}
 
 	/**
 	 * This method is the one tha compares the length of the ArrayList.
@@ -1075,7 +1107,8 @@ public class BigInt implements BigIntInterface
 		try {
 			if (first.equals(second)) return 0;
 			else {
-				return first.size() != second.size() ? compareBasedOnLengthArrayList(first, second)
+				return first.size() != second.size()
+						? compareBasedOnLengthArrayList(first, second)
 						: compareEachNumberForLoop(first, second);
 			}
 		}catch (NullPointerException e){

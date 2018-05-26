@@ -2,7 +2,7 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import RevisedBigInt.Exceptions.DivideByZeroException;
-
+import RevisedBigInt.FileReader.BigIntFileReader;
 import java.io.File;
 import java.lang.Math;
 import java.lang.StringBuilder;
@@ -782,10 +782,12 @@ public class BigInt implements BigIntInterface
 	 * @param mod - true if mod value was requested
 	 * @return BigInt Object representing quotient
 	 */
-	private BigInt handleDivCases(BigInt other,boolean mod)
+	@SuppressWarnings("EqualsBetweenInconvertibleTypes")
+	private BigInt handleDivCases(BigInt other, boolean mod)
 	{
 		makeAbs(other);
-		if(this.list.equals(other.list))
+		if(this.equals(0)) return new BigInt("0");
+		else if(this.list.equals(other.list))
 			return mod ? new BigInt("0") : new BigInt("1");
 		else if(isLessThan(this.list,other.list) == -1)
 			return mod ? new BigInt(this.list) : new BigInt("0");
@@ -1044,11 +1046,63 @@ public class BigInt implements BigIntInterface
 	 */
 	@SafeVarargs
 	private final ArrayList<Integer> getProduct(ArrayList<Integer> ... lists)
-		{
-			return lists[0].size()==1 && lists[1].size()==1
-					? singleDigitMultCase(lists[0],lists[1])
-					: multplityAlgo(lists[0],lists[1]);
+	{
+		return lists[0].size()==1 && lists[1].size()==1
+				? singleDigitMultCase(lists[0],lists[1])
+				: multplityAlgo(lists[0],lists[1]);
+	}
+
+	/**
+	 * Calculates BigInt <tt>(this<sup>exponent</sup>)</tt>
+	 * The exponent is of type int rather than a BigInt because
+	 * that just makes life easier.
+	 * Before doing anything serious, this method takes care of special
+	 * cases where <tt>(this<sup>0</sup>)</tt> == 1
+	 * and <tt>(this<sup>1</sup>)</tt> == this.
+	 *
+	 * Then it goes in a helper method that actually does the exponents.
+	 *
+	 * @param exponent - value of the exponent
+	 * @return <tt>(this<sup>exponent</sup>)</tt>
+	 */
+	BigInt pow(int exponent)
+	{
+		BigInt expoResult;
+		if(exponent == 0) expoResult = new BigInt("1");
+		else if(exponent == 1) expoResult = this;
+		else {
+			reverse(this.list);
+			expoResult = recursiveExpo(this.list,this.list, exponent);
+			reverse(this.list,expoResult.list);
 		}
+		return expoResult;
+	}
+
+	/**
+	 * Recursively finds the value of <tt>(this<sup>exponent</sup>)</tt>.
+	 * Parameters accepts original arraylist, product arraylist and the current
+	 * exponent value.
+	 *
+	 * The value of the exponent decreses each time the recursive method is called.
+	 * It functions as a counting value.
+	 *
+	 * Base Case: if(expo==1) return the current product
+	 *
+	 * @param org - {@code this.list}
+	 * @param newlist - this.list*<tt>(this.list<sub>i</sub>)</tt>.
+	 *                i == current iteration of exponent
+	 * @param exponent - exponent value int
+	 * @return <tt>(this<sup>exponent</sup>)</tt>
+	 */
+	private BigInt recursiveExpo(ArrayList<Integer> org,ArrayList<Integer> newlist,
+	                             int exponent) {
+		if(exponent == 1)
+			return new BigInt(newlist);
+		else{
+			ArrayList<Integer> product = new ArrayList<>(multplityAlgo(org,newlist));
+			return recursiveExpo(org, product,--exponent);
+		}
+	}
 
 	/**
 	 * This method is the one tha compares the length of the ArrayList.

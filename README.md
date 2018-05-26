@@ -11,6 +11,7 @@ The following methods are are public and provided in this class:
 - Multiply
 - Integer Divison
 - Modulus
+- Exponentiate
 - Absolute Value
 - Minimum
 - Maximum
@@ -24,7 +25,7 @@ This class implements the BigInt Interface\
 
 ## Tests
 
-I have provided JUnit4 Test class with 112 test cases that has 100% coverage in the class.
+I have provided JUnit4 Test class with 118 test cases that has 100% coverage in the class.
 
 ## Exceptions
 

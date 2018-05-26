@@ -11,6 +11,7 @@ The following methods are are public and provided in this class:
 - Multiply
 - Integer Divison
 - Modulus
+- Exponentiate
 - Absolute Value
 - Minimum
 - Maximum

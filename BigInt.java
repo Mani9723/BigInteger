@@ -6,6 +6,7 @@ import RevisedBigInt.FileReader.BigIntFileReader;
 import java.io.File;
 import java.lang.Math;
 import java.lang.StringBuilder;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -1367,14 +1368,15 @@ public class BigInt implements BigIntInterface
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		checkForNegativeNumbers();
-		if(isCharged) stringBuilder.append('-');
+		if (isCharged) stringBuilder.append('-');
 
 		for (Integer aNumberArray : this.list)
 			stringBuilder.append(Math.abs(aNumberArray));
 
 		String finalString = stringBuilder.toString();
 
-		return finalString.matches("^[0]+$") ?
-				finalString.substring(0,1) : finalString.replaceFirst("^0*", "");
+		return finalString.matches("^[0]+$") ? finalString.substring(0, 1)
+				: finalString.replaceFirst("^0*", "");
+
 	}
 }

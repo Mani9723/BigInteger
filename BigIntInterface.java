@@ -1,5 +1,8 @@
 package RevisedBigInt;
 
+/**
+ * Defines a general interface that specifies certain methods that must exist
+ */
 public interface BigIntInterface
 {
 	/**

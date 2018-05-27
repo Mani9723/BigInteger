@@ -2,11 +2,12 @@ package RevisedBigInt;
 
 import RevisedBigInt.Exceptions.InvalidInputException;
 import RevisedBigInt.Exceptions.DivideByZeroException;
+import RevisedBigInt.Exceptions.NegativeExponentException;
 import RevisedBigInt.FileReader.BigIntFileReader;
+
 import java.io.File;
 import java.lang.Math;
 import java.lang.StringBuilder;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -145,6 +146,10 @@ public class BigInt implements BigIntInterface
 	 */
 	private boolean isCharged = false;
 
+	private final long MAX_LONG_VALUE = Long.MAX_VALUE;
+
+	private final int MAX_INT_VALUE = Integer.MAX_VALUE;
+
 	/**
 	 * The Packacge Private main constructor accepts a string argument.
 	 * Since a string can be of arbritary length, only the memory of
@@ -188,7 +193,7 @@ public class BigInt implements BigIntInterface
 	{
 		String path = file.getPath();
 		BigIntFileReader fileContents = new BigIntFileReader(path);
-		String number = fileContents.toString();
+		String number = fileContents.getContents();
 		try {
 			if(isInputValid(number))
 				this.list = new ArrayList<>(storeInArrayList(number));
@@ -243,8 +248,7 @@ public class BigInt implements BigIntInterface
 	private boolean isInputValid(String value) throws InvalidInputException
 	{
 		if(!value.matches("^[0-9]+$"))
-			throw new InvalidInputException(value.concat(" ")
-					.concat("Contains invalid Character"));
+			throw new InvalidInputException("Contains invalid Character");
 		return true;
 	}
 
@@ -355,11 +359,11 @@ public class BigInt implements BigIntInterface
 			tempSum = addend.get(i) + auguend.get(i) + carry;
 			if (tempSum >= 10 || tempSum <= -10) {
 				carry = tempSum / 10;
-				sum.add(tempSum % 10);
+				tempSum %=10;
 			} else {
-				sum.add(tempSum);
 				carry = 0;
 			}
+			sum.add(tempSum);
 		}
 		if (carry != 0) sum.add(carry);
 
@@ -494,19 +498,19 @@ public class BigInt implements BigIntInterface
 	{
 		padArrayList(minuend,subtrahend);
 		ArrayList<Integer> difference = new ArrayList<>();
-		int tempSum, borrow = 0;
+		int tempDiff, borrow = 0;
 
 		for (int i = 0; i < minuend.size(); i++) {
-			tempSum = (minuend.get(i) - borrow) - subtrahend.get(i);
-			if (tempSum < 0) {
-				difference.add(tempSum + 10);
+			tempDiff = (minuend.get(i) - borrow) - subtrahend.get(i);
+			if (tempDiff < 0) {
+				tempDiff +=10;
 				borrow = 1;
 			} else {
-				difference.add(tempSum);
 				borrow = 0;
 			}
+			difference.add(tempDiff);
 		}if(difference.get(difference.size()-1) == 0)
-		difference.remove(difference.size()-1);
+			difference.remove(difference.size()-1);
 
 		return difference;
 	}
@@ -708,7 +712,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt
 	 * @return this%mod as BigInt
 	 */
-	BigInt mod(BigInt other)
+	public BigInt mod(BigInt other)
 	{
 		validateDivisor(other);
 		BigInt mod = handleDivCases(other,true);
@@ -963,13 +967,9 @@ public class BigInt implements BigIntInterface
 	{
 		int divisorLen = divisor.size();
 		ArrayList<Integer> tempDividend = new ArrayList<>(dividend.subList(0,divisorLen));
-		int result = 1;
-		while(result == 1){
-			result = isLessThan(divisor,tempDividend);
-			if(result == 1)
-				tempDividend = new ArrayList<>(dividend.subList(0,divisorLen + 1));
-		}
-		return tempDividend;
+
+		return isLessThan(divisor,tempDividend) == 1 ? new ArrayList<>(dividend.subList(0,divisorLen+1))
+				: tempDividend;
 	}
 	/**
 	 * Removes lading zeros that often results in after subtraction
@@ -1068,6 +1068,7 @@ public class BigInt implements BigIntInterface
 	 */
 	BigInt pow(int exponent)
 	{
+		validateExponent(exponent);
 		BigInt expoResult;
 		if(exponent == 0) expoResult = new BigInt("1");
 		else if(exponent == 1) expoResult = this;
@@ -1079,6 +1080,25 @@ public class BigInt implements BigIntInterface
 		return expoResult;
 	}
 
+	/**
+	 * Since this is a BigInteger class and not a BigDecimal class,
+	 * all results must be an Integer so that leaves having negative
+	 * exponents out the scope.
+	 *
+	 * Throws {@link NegativeExponentException} if exponent<0
+	 * @param exponent - value to be tested
+	 */
+	private void validateExponent(int exponent)
+	{
+		try{
+			if(exponent<0) throw new NegativeExponentException("Exponent < 0");
+		}catch (NegativeExponentException e){
+			e.getMessage();
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+	private int count = 0;
 	/**
 	 * Recursively finds the value of <tt>(this<sup>exponent</sup>)</tt>.
 	 * Parameters accepts original arraylist, product arraylist and the current
@@ -1097,10 +1117,13 @@ public class BigInt implements BigIntInterface
 	 */
 	private BigInt recursiveExpo(ArrayList<Integer> org,ArrayList<Integer> newlist,
 	                             int exponent) {
+		System.out.printf("Divisor^%d:\t",++count);
+		long start = System.currentTimeMillis();
 		if(exponent == 1)
 			return new BigInt(newlist);
 		else{
 			ArrayList<Integer> product = new ArrayList<>(multplityAlgo(org,newlist));
+			System.out.println("Time: "+(System.currentTimeMillis()-start));
 			return recursiveExpo(org, product,--exponent);
 		}
 	}
@@ -1377,6 +1400,5 @@ public class BigInt implements BigIntInterface
 
 		return finalString.matches("^[0]+$") ? finalString.substring(0, 1)
 				: finalString.replaceFirst("^0*", "");
-
 	}
 }

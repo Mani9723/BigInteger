@@ -112,16 +112,16 @@ import java.util.LinkedHashMap;
  * good design.
  *
  * This class provides methods that allow for basic arithmetic on arbritarily large integers.
- * Only {x | x E Z}.
- *
+ * Only {x,y | x E Z && y E Z}.
+ * 
  * This class provides {@link #add(BigInt)}, {@link #subtract(BigInt)},
- * {@link #multiply(BigInt)}multiplication, division*, and modulus*.
+ * {@link #multiply(BigInt)}multiplication, division, modulus, 
+ * comparisons, and exopnentiation.
  * There are a couple of comparison option such as {@link #isEqualTo(BigInt)} and {@link #compareTo(BigInt)}
  *
  * Overall, this class has been tested thoroughly using the JUnit4 Testing framework
  * on all methods with 100% coverage.
  *
- *------*: refers to features that are under development.
  * @author Mani Shah
  * @version 2.1
  * @since 4/4/18

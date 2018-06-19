@@ -112,7 +112,7 @@ import java.util.LinkedHashMap;
  * good design.
  *
  * This class provides methods that allow for basic arithmetic on arbritarily large integers.
- * Only {x,y | x E Z && y E Z}.
+ * Only {@literal {x,y | x E Z && y E Z}}.
  * 
  * This class provides {@link #add(BigInt)}, {@link #subtract(BigInt)},
  * {@link #multiply(BigInt)}multiplication, division, modulus, 

@@ -112,16 +112,16 @@ import java.util.LinkedHashMap;
  * good design.
  *
  * This class provides methods that allow for basic arithmetic on arbritarily large integers.
- * Only {@literal {x,y | x E Z && y E Z}}.
- * 
+ * Only {x | x E Z}.
+ *
  * This class provides {@link #add(BigInt)}, {@link #subtract(BigInt)},
- * {@link #multiply(BigInt)}multiplication, division, modulus, 
- * comparisons, and exopnentiation.
+ * {@link #multiply(BigInt)}multiplication, division*, and modulus*.
  * There are a couple of comparison option such as {@link #isEqualTo(BigInt)} and {@link #compareTo(BigInt)}
  *
  * Overall, this class has been tested thoroughly using the JUnit4 Testing framework
  * on all methods with 100% coverage.
  *
+ *------*: refers to features that are under development.
  * @author Mani Shah
  * @version 2.1
  * @since 4/4/18
@@ -145,10 +145,6 @@ public class BigInt implements BigIntInterface
 	 * handles.
 	 */
 	private boolean isCharged = false;
-
-	private final long MAX_LONG_VALUE = Long.MAX_VALUE;
-
-	private final int MAX_INT_VALUE = Integer.MAX_VALUE;
 
 	/**
 	 * The Packacge Private main constructor accepts a string argument.
@@ -510,7 +506,7 @@ public class BigInt implements BigIntInterface
 			}
 			difference.add(tempDiff);
 		}if(difference.get(difference.size()-1) == 0)
-			difference.remove(difference.size()-1);
+		difference.remove(difference.size()-1);
 
 		return difference;
 	}
@@ -864,6 +860,7 @@ public class BigInt implements BigIntInterface
 	 * However, I ran into the problem of not being able to keep track of the
 	 * number of times the recursive step was taken, which would have been the
 	 * quotient and the remaining difference would have been the modulus value.
+	 * And it would have horribly slow.
 	 *
 	 * So I used the long division approach.
 	 * When doing long division, first the dividend has to be equal to or greater than
@@ -877,9 +874,9 @@ public class BigInt implements BigIntInterface
 	 *
 	 * The obvious problem and the most time consuming is the part where you have
 	 * to find the the multiple of the divisor that is less than or equal to the
-	 * current dividend. Now, the only options for the quotient are 0-9 both inclusive.
-	 * So originally you would have to multiply by 1,2,3... until the desired multiple
-	 * is found. To keep repeating that process is a waste of computing power.
+	 * current dividend. Now, the only options for the quotient at each turn are
+	 * 0-9 both inclusive.So originally you would have to multiply by 1,2,3...
+	 * until the desired multiple is found. To keep repeating that process is a waste of computing power.
 	 *
 	 * The solution to that problem is to realize a key fact. Each time you are multiplying
 	 * the divisor by 1-9 you get the same 9 set of values that you will be comparing the
@@ -967,8 +964,8 @@ public class BigInt implements BigIntInterface
 	{
 		int divisorLen = divisor.size();
 		ArrayList<Integer> tempDividend = new ArrayList<>(dividend.subList(0,divisorLen));
-
-		return isLessThan(divisor,tempDividend) == 1 ? new ArrayList<>(dividend.subList(0,divisorLen+1))
+		return isLessThan(divisor,tempDividend)==1
+				? new ArrayList<>(dividend.subList(0,divisorLen+1))
 				: tempDividend;
 	}
 	/**
@@ -1074,7 +1071,8 @@ public class BigInt implements BigIntInterface
 		else if(exponent == 1) expoResult = this;
 		else {
 			reverse(this.list);
-			expoResult = recursiveExpo(this.list,this.list, exponent);
+			//expoResult = recursiveExpo(this.list,this.list, exponent);
+			expoResult = expoAddition(this.list,exponent);
 			reverse(this.list,expoResult.list);
 		}
 		return expoResult;
@@ -1098,7 +1096,7 @@ public class BigInt implements BigIntInterface
 			System.exit(-1);
 		}
 	}
-	private int count = 0;
+
 	/**
 	 * Recursively finds the value of <tt>(this<sup>exponent</sup>)</tt>.
 	 * Parameters accepts original arraylist, product arraylist and the current
@@ -1117,14 +1115,38 @@ public class BigInt implements BigIntInterface
 	 */
 	private BigInt recursiveExpo(ArrayList<Integer> org,ArrayList<Integer> newlist,
 	                             int exponent) {
-		System.out.printf("Divisor^%d:\t",++count);
-		long start = System.currentTimeMillis();
 		if(exponent == 1)
 			return new BigInt(newlist);
 		else{
-			ArrayList<Integer> product = new ArrayList<>(multplityAlgo(org,newlist));
-			System.out.println("Time: "+(System.currentTimeMillis()-start));
+			ArrayList<Integer> product = new ArrayList<>(multplityAlgo(newlist,org));
 			return recursiveExpo(org, product,--exponent);
+		}
+	}
+
+	/**
+	 * if n is odd -> x(x^2)^(n-1/2)
+	 * if n is even -> (x^2)^(n/2)
+	 *
+	 *
+	 * @param org - al
+	 * //@param newlist - al
+	 * @param expo - duh
+	 * @return result
+	 */
+	private BigInt expoAddition(ArrayList<Integer> org, int expo)
+	{
+		int secondPow = (expo-1) >>> 1;
+		ArrayList<Integer> result, firstResult = new ArrayList<>(),
+				secondResult;
+		if(expo%2 != 0 ){
+			firstResult = new ArrayList<>(multplityAlgo(org,org));
+			secondResult = new ArrayList<>(recursiveExpo(firstResult,firstResult,(secondPow)).list);
+			result = multplityAlgo(secondResult,org);
+			return new BigInt(result);
+		}else{
+			firstResult = new ArrayList<>(recursiveExpo(org,org,2).list);
+			result = new ArrayList<>(recursiveExpo(firstResult,firstResult,expo>>>1).list);
+			return new BigInt(result);
 		}
 	}
 

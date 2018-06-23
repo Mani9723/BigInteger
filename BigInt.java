@@ -201,7 +201,7 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * Private constructor that acts as an lightweight constructor
-	 * whose only purpose is to hold temporary arraylist until the operation
+	 * whose only purpose is to hold temporary array List until the operation
 	 * on that arrayList has been created.
 	 *
 	 * @param numberArray - ArrayList that temporarily creates a BigInt object to be manipulated.
@@ -211,6 +211,12 @@ public class BigInt implements BigIntInterface
 		this.list = numberArray;
 	}
 
+	private BigInt(String arrayList, boolean isValid)
+	{
+		if(isValid){
+			storeInArrayList(arrayList);
+		}
+	}
 	/**
 	 * This method simply looks for a positve or a negative sign in front of the user input
 	 * and initializes the boolean instance variable if the sign is negative.
@@ -255,9 +261,8 @@ public class BigInt implements BigIntInterface
 	private void setSign(char signValue)
 	{
 		if (signValue == '-')
-			isCharged = true;
+			this.isCharged = true;
 	}
-
 
 	/**
 	 * Store the final approved String in the {@link #list}
@@ -268,11 +273,12 @@ public class BigInt implements BigIntInterface
 	private ArrayList<Integer> storeInArrayList(String value)
 	{
 		ArrayList<Integer> numberArray = new ArrayList<>();
+		int len = value.length();
 		if (isCharged) {
-			for (int i = 0; i < value.length(); i++)
+			for (int i = 0; i < len; i++)
 				numberArray.add(Integer.parseInt(value.substring(i, i + 1)) * -1);
 		} else {
-			for (int i = 0; i < value.length(); i++)
+			for (int i = 0; i < len; i++)
 				numberArray.add(Integer.parseInt(value.substring(i, i + 1)));
 		}return numberArray;
 	}
@@ -298,7 +304,6 @@ public class BigInt implements BigIntInterface
 	{
 		return this.isCharged ?
 				new BigInt(this.negate(this.list)) : this;
-
 	}
 
 	/**
@@ -326,6 +331,7 @@ public class BigInt implements BigIntInterface
 		reverse(this.list,other.list);
 		BigInt f = new BigInt(add(this.list, other.list));
 		reverse(this.list,other.list,f.list);
+		if(f.list.get(0)<0) f.isCharged = true;
 		return f;
 	}
 
@@ -382,6 +388,7 @@ public class BigInt implements BigIntInterface
 		reverse(this.list,other.list);
 		difference = new BigInt(subtractionByCases(other));
 		reverse(this.list,other.list,difference.list);
+		if(difference.list.get(0) < 0) difference.isCharged = true;
 		return difference;
 	}
 
@@ -527,11 +534,57 @@ public class BigInt implements BigIntInterface
 	public BigInt multiply(BigInt other)
 	{
 		BigInt product;
-		reverse(this.list,other.list);
-		product = new BigInt(multiplyByCases(other,this.list,other.list));
-		reverse(this.list,other.list,product.list);
+		product = mulCases(other);
+		makeAbs(other);
 		return product;
+	}
 
+	/**
+	 *
+	 * @param other
+	 * @return
+	 */
+	private BigInt mulCases(BigInt other)
+	{
+		String product;
+		if(this.list.size() == 1 && other.list.size() == 1)
+			return new BigInt(Integer.toString(this.list.get(0)*other.list.get(0)));
+		else
+			product = karatsubaMultiplication(other);
+		if(isOneNegative(other))
+			return new BigInt("-" + product);
+		return new BigInt(product);
+	}
+
+	/**
+	 *
+	 * @param other
+	 * @return
+	 */
+	private String karatsubaMultiplication(BigInt other)
+	{
+		makeAbs(other);
+		Karatsuba karatsuba = new Karatsuba();
+		return sendToKaratsuba(karatsuba,this.toString(),other.toString());
+	}
+
+	/**
+	 *
+	 * @param karatsuba
+	 * @param s
+	 * @param s1
+	 * @return
+	 */
+	private String sendToKaratsuba(Karatsuba karatsuba, String s, String s1)
+	{
+		String modifS = s.substring(1,s.length()), modifS1 = s1.substring(1,s1.length());
+		if(s.charAt(0) == '-' && s1.charAt(0) == '-')
+			return karatsuba.multiply(modifS,modifS1,10);
+		else if(s.charAt(0) == '-')
+			return karatsuba.multiply(modifS,s1,10);
+		else if(s1.charAt(0)== '-')
+			return karatsuba.multiply(s,modifS1,10);
+		else return karatsuba.multiply(s,s1,10);
 	}
 
 	/**
@@ -565,8 +618,8 @@ public class BigInt implements BigIntInterface
 			product.add(multiplicand.get(0)*multiplier.get(0));
 		else {
 			product = multiplicand.size() < multiplier.size() ?
-					multplityAlgo(multiplier, multiplicand)
-					: multplityAlgo(multiplicand, multiplier);
+					multiplyNaive(multiplier, multiplicand)
+					: multiplyNaive(multiplicand, multiplier);
 			if(!(this.isCharged && other.isCharged)&&
 					(this.isCharged || other.isCharged)){
 				product = negate(product);
@@ -602,16 +655,16 @@ public class BigInt implements BigIntInterface
 	 * @param multiplier - Second ArrayList
 	 * @return the product as ArrayList
 	 */
-	private ArrayList<Integer> multplityAlgo(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
+	private ArrayList<Integer> multiplyNaive(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
 	{
 		int carry = 0, tempProduct;
-		ArrayList<Integer> product = new ArrayList<>(), firstProduct = new ArrayList<>(),
+		ArrayList<Integer> product = new ArrayList<>(),firstProduct = new ArrayList<>(),
 				partialSum = new ArrayList<>();
 		for (int i = 0; i < multiplier.size(); i++) {
-			if (i > 0) firstProduct = new ArrayList<>(addZerosToTheFrontOfPartialSum(firstProduct, i));
+			if (i > 0) firstProduct = new ArrayList<>(addZerosToPartialSum(firstProduct, i));
 			partialSum.clear();
-			for (Integer multiplied : multiplicand) {
-				tempProduct = Math.abs(multiplied * multiplier.get(i)) + carry;
+			for (Integer currValue : multiplicand) {
+				tempProduct = Math.abs(currValue * multiplier.get(i)) + carry;
 				if (tempProduct >= 10) {
 					carry = tempProduct / 10;
 					firstProduct.add(tempProduct % 10);
@@ -632,7 +685,6 @@ public class BigInt implements BigIntInterface
 				firstProduct.clear();
 			}
 		}
-
 		return product;
 	}
 
@@ -645,7 +697,7 @@ public class BigInt implements BigIntInterface
 	 * @param zeros - The number of zeros to be added
 	 * @return - Padded ArrayList
 	 */
-	private ArrayList<Integer> addZerosToTheFrontOfPartialSum(ArrayList<Integer> firstProduct, int zeros)
+	private ArrayList<Integer> addZerosToPartialSum(ArrayList<Integer> firstProduct, int zeros)
 	{
 		for(int i = 0; i < zeros; i++)
 			firstProduct.add(i,0);
@@ -696,8 +748,8 @@ public class BigInt implements BigIntInterface
 	{
 		validateDivisor(other);
 		BigInt quotient = handleDivCases(other,false);
-		if(!(this.isCharged && other.isCharged) && (this.isCharged||other.isCharged))
-			quotient = new BigInt(negate(quotient.list));
+		if(isOneNegative(other) && (quotient.list.get(0) != 0))
+			quotient.isCharged = true;
 		return quotient;
 	}
 
@@ -712,14 +764,12 @@ public class BigInt implements BigIntInterface
 	{
 		validateDivisor(other);
 		BigInt mod = handleDivCases(other,true);
-		if(!(this.isCharged && other.isCharged) && (this.isCharged||other.isCharged)) {
-			int i = mod.list.get(0);
-			mod.list.remove(0);
-			mod.list.add(0, i * -1);
-			mod = new BigInt(mod.list);
+		if(isOneNegative(other)) {
+			mod.isCharged = true;
 		}
 		return mod;
 	}
+	
 	/**
 	 * Checks whether the divisor value is 0.
 	 * If this test passes, the division process
@@ -968,6 +1018,7 @@ public class BigInt implements BigIntInterface
 				? new ArrayList<>(dividend.subList(0,divisorLen+1))
 				: tempDividend;
 	}
+
 	/**
 	 * Removes lading zeros that often results in after subtraction
 	 * Mainly used in the divison process.
@@ -1013,7 +1064,7 @@ public class BigInt implements BigIntInterface
 	 * Creates the LinkedHashMap tables that contains the possible quotients
 	 * and the product of (divisor*possible quotient).
 	 * It reverses the divisor before multiplying because thats how
-	 * the {@link #multplityAlgo(ArrayList, ArrayList)} algorithm was designed.
+	 * the {@link #multiplyNaive(ArrayList, ArrayList)} algorithm was designed.
 	 * Uses the {@link Collections} class to reverse the divisor to and from the
 	 * original position.
 	 *
@@ -1047,7 +1098,7 @@ public class BigInt implements BigIntInterface
 	{
 		return lists[0].size()==1 && lists[1].size()==1
 				? singleDigitMultCase(lists[0],lists[1])
-				: multplityAlgo(lists[0],lists[1]);
+				: multiplyNaive(lists[0],lists[1]);
 	}
 
 	/**
@@ -1071,7 +1122,6 @@ public class BigInt implements BigIntInterface
 		else if(exponent == 1) expoResult = this;
 		else {
 			reverse(this.list);
-			//expoResult = recursiveExpo(this.list,this.list, exponent);
 			expoResult = expoAddition(this.list,exponent);
 			reverse(this.list,expoResult.list);
 		}
@@ -1118,7 +1168,7 @@ public class BigInt implements BigIntInterface
 		if(exponent == 1)
 			return new BigInt(newlist);
 		else{
-			ArrayList<Integer> product = new ArrayList<>(multplityAlgo(newlist,org));
+			ArrayList<Integer> product = new ArrayList<>(multiplyNaive(newlist,org));
 			return recursiveExpo(org, product,--exponent);
 		}
 	}
@@ -1129,19 +1179,17 @@ public class BigInt implements BigIntInterface
 	 *
 	 *
 	 * @param org - al
-	 * //@param newlist - al
-	 * @param expo - duh
+	 * @param expo - duh!
 	 * @return result
 	 */
 	private BigInt expoAddition(ArrayList<Integer> org, int expo)
 	{
 		int secondPow = (expo-1) >>> 1;
-		ArrayList<Integer> result, firstResult = new ArrayList<>(),
-				secondResult;
+		ArrayList<Integer> result, firstResult, secondResult;
 		if(expo%2 != 0 ){
-			firstResult = new ArrayList<>(multplityAlgo(org,org));
+			firstResult = new ArrayList<>(multiplyNaive(org,org));
 			secondResult = new ArrayList<>(recursiveExpo(firstResult,firstResult,(secondPow)).list);
-			result = multplityAlgo(secondResult,org);
+			result = multiplyNaive(secondResult,org);
 			return new BigInt(result);
 		}else{
 			firstResult = new ArrayList<>(recursiveExpo(org,org,2).list);
@@ -1152,7 +1200,7 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * This method is the one tha compares the length of the ArrayList.
-	 * The helper method {@link #addZerosToTheFrontOfPartialSum(ArrayList, int)}
+	 * The helper method {@link #addZerosToPartialSum(ArrayList, int)}
 	 * will actually add zeros.
 	 * What this method does is that is finds the difference in length and
 	 * passes that value along with the arraylist that needs to be padded.
@@ -1366,6 +1414,12 @@ public class BigInt implements BigIntInterface
 		return this.list.size() > other.list.size() ? 1 : -1;
 	}
 
+	private boolean isOneNegative(BigInt other)
+	{
+		return !(this.isCharged && other.isCharged)
+				&&(this.isCharged || other.isCharged);
+	}
+
 	/**
 	 * This method will negate the Arraylist's each element so that operations
 	 * are done properly.
@@ -1378,24 +1432,6 @@ public class BigInt implements BigIntInterface
 		for (Integer aNumberArray : numberArray)
 			negatedArray.add(aNumberArray * -1);
 		return negatedArray;
-	}
-
-	/**
-	 * This is a redundant method that will determine if there needs to be
-	 * a negative sign on the final string representation of the BigInt object
-	 * when being printed.
-	 * It does not need to go through the entire array the worst case is that there
-	 * are zeros in the begining; which really does not happen.
-	 * 99% of the cases will only need to check the first value.
-	 */
-	private void checkForNegativeNumbers()
-	{
-		for (Integer aNumberArray : this.list) {
-			if (aNumberArray < 0) {
-				isCharged = true;
-				break;
-			}
-		}
 	}
 
 	/**
@@ -1412,14 +1448,10 @@ public class BigInt implements BigIntInterface
 	public String toString()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		checkForNegativeNumbers();
-		if (isCharged) stringBuilder.append('-');
-
+		if (this.isCharged) stringBuilder.append('-');
 		for (Integer aNumberArray : this.list)
 			stringBuilder.append(Math.abs(aNumberArray));
-
 		String finalString = stringBuilder.toString();
-
 		return finalString.matches("^[0]+$") ? finalString.substring(0, 1)
 				: finalString.replaceFirst("^0*", "");
 	}

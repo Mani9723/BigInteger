@@ -7,13 +7,13 @@ import java.util.Scanner;
  * Implementation of Karatsuba's multiplication algorithm
  * 	This code supports non-negative numeric multiplications of up to base 36 ('Z' is max permitted by alphabets)
  */
-public class Karatsuba {
+class Karatsuba {
 
-	public Karatsuba()
+	Karatsuba()
 	{
 		//DEFAULT-
 	}
-	
+
 	/**
 	 *  Converts a numeric string into an array of int, preserving right-left order and ignoring radix
 	 */
@@ -46,7 +46,7 @@ public class Karatsuba {
 	 * Driver function for KaratsubaMultiply
 	 * 	Formats input parameters and output
 	 */
-	public String multiply(String x, String y, int base){
+	String multiply(String x, String y, int base){
 
 		int radix_x_Index = x.indexOf('.');
 		int radix_y_Index = y.indexOf('.');

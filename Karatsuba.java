@@ -1,5 +1,6 @@
 package RevisedBigInt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -16,6 +17,8 @@ class Karatsuba {
 
 	/**
 	 *  Converts a numeric string into an array of int, preserving right-left order and ignoring radix
+	 * @param hasRadix  - boolean
+	 * @param num - string
 	 */
 	private  int[] toIntArray(String num, boolean hasRadix){
 		int[] arr = (hasRadix)? new int[num.length()-1]: new int[num.length()];
@@ -32,6 +35,7 @@ class Karatsuba {
 
 	/**
 	 * Converts a int array to numeric string
+	 * @param arr - int[] array
 	 */
 	private  String intArrayToString(int[] arr){
 		StringBuffer sb = new StringBuffer();
@@ -45,6 +49,10 @@ class Karatsuba {
 	/**
 	 * Driver function for KaratsubaMultiply
 	 * 	Formats input parameters and output
+	 *
+	 * @param base - int
+	 * @param x -string
+	 * @param y -string
 	 */
 	String multiply(String x, String y, int base){
 
@@ -79,6 +87,9 @@ class Karatsuba {
 
 	/**
 	 * Karatsuba's multiplication algorithm (recursive)
+	 * @param x - int[]
+	 * @param y - int[]
+	 * @param base - int
 	 */
 	private int[] karatsubaMultiply(int[] x, int[] y, int base){
 
@@ -117,6 +128,9 @@ class Karatsuba {
 
 	/**
 	 *  Long multiplication algorithm
+	 * @param y - int[]
+	 * @param base - int
+	 * @param x - int[]
 	 */
 	private  int[] longMultiplication(int[] x, int[] y, int base){
 		int[] top, bot;	// top and bottom operands in long multiplication
@@ -163,6 +177,9 @@ class Karatsuba {
 
 	/**
 	 * Shifts array by amount given and in the direction stated
+	 * @param arr - int[]
+	 * @param amount - int
+	 * @param direction - string
 	 */
 	private  int[] shift(String direction, int[] arr, int amount){
 //		System.out.println("[shift] numericString,amount: " + numericString + "," + amount);	// check
@@ -185,6 +202,10 @@ class Karatsuba {
 
 	/**
 	 *  Adds two int arrays of the given base
+	 *
+	 * @param b - int[]
+	 * @param base - int
+	 * @param a - int[]
 	 */
 	private  int[] addition(int[] a, int[] b, int base){
 		int[] ans = new int[Math.max(a.length, b.length) + 1];
@@ -213,6 +234,10 @@ class Karatsuba {
 	/**
 	 *  Subtracts 'smaller' from 'greater' int arrays of the given base
 	 *  will not produce negative numbers since greater and smaller are guaranteed by caller
+	 *
+	 * @param base - int
+	 * @param greater - int[]
+	 * @param smaller - int[]
 	 */
 	//
 	private  int[] subtraction(int[] greater, int[] smaller, int base){
@@ -235,6 +260,9 @@ class Karatsuba {
 
 	/**
 	 * Creates subarray from the given range
+	 * @param start - int
+	 * @param end - int
+	 * @param src - int[]
 	 */
 	private  int[] copyOfRange(int[] src, int start, int end){
 		int[] dest = new int[end - start];
@@ -244,6 +272,8 @@ class Karatsuba {
 
 	/**
 	 * Use to trim leading and trailing zeros on a result string.
+	 *
+	 * @param input string
 	 */
 	private  String trimZeros(String input) {
 		int left = 0;
@@ -275,6 +305,7 @@ class Karatsuba {
 
 	/**
 	 * Convert digit to int (for reading)
+	 * @param c - character
 	 */
 	private  int parseDigit(char c) {
 		if (c <= '9') {
@@ -285,6 +316,7 @@ class Karatsuba {
 
 	/**
 	 * Convert int to digit. (for printing)
+	 * @param digit  int
 	 */
 	private  char toDigit(int digit) {
 		if (digit <= 9) {
@@ -293,13 +325,19 @@ class Karatsuba {
 		return (char)(digit - 10 + 'A');
 	}
 
-	/**
-	 * For checking: prints out the int array
-	 */
 	@SuppressWarnings("unused")
 	private  void printIntArray(int[] arr){
 		System.out.print("[printIntArray]: ");
 		for (int i: arr) System.out.print(i);
 		System.out.println();
+	}
+
+	ArrayList<Integer> toAList(String s)
+	{
+		ArrayList<Integer> a = new ArrayList<>();
+		for(int i = 0; i < s.length(); i++){
+			a.add(Integer.parseInt(s.substring(i,i+1)));
+		}
+		return a;
 	}
 }

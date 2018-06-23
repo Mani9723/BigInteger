@@ -126,7 +126,7 @@ public class BigInt implements BigIntInterface
 
 		try {
 			if (isInputValid(absValue))
-				this.list = new ArrayList<>(storeInArrayList(absValue));
+				storeInArrayList(absValue);
 		} catch (InvalidInputException e) {
 			e.getMessage();
 			e.printStackTrace();
@@ -150,7 +150,7 @@ public class BigInt implements BigIntInterface
 		String number = fileContents.getContents();
 		try {
 			if(isInputValid(number))
-				this.list = new ArrayList<>(storeInArrayList(number));
+				storeInArrayList(number);
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -227,19 +227,17 @@ public class BigInt implements BigIntInterface
 	 * Store the final approved String in the {@link #list}
 	 * If negative the elements will be negated during parsing.
 	 * @param value - String to be stored in the ArrayList
-	 * @return the final ArrayList that will be assigned to {@link #list}
 	 */
-	private ArrayList<Integer> storeInArrayList(String value)
+	private void storeInArrayList(String value)
 	{
-		ArrayList<Integer> numberArray = new ArrayList<>();
 		int len = value.length();
 		if (isCharged) {
 			for (int i = 0; i < len; i++)
-				numberArray.add(Integer.parseInt(value.substring(i, i + 1)) * -1);
+				this.list.add(Integer.parseInt(value.substring(i, i + 1)) * -1);
 		} else {
 			for (int i = 0; i < len; i++)
-				numberArray.add(Integer.parseInt(value.substring(i, i + 1)));
-		}return numberArray;
+				this.list.add(Integer.parseInt(value.substring(i, i + 1)));
+		}
 	}
 
 	/**
@@ -261,8 +259,7 @@ public class BigInt implements BigIntInterface
 	 */
 	BigInt absValue()
 	{
-		return this.isCharged ?
-				new BigInt(this.negate(this.list)) : this;
+		return this.isCharged ? new BigInt(this.negate(this.list)) : this;
 	}
 
 	/**
@@ -290,7 +287,8 @@ public class BigInt implements BigIntInterface
 		reverse(this.list,other.list);
 		BigInt f = new BigInt(add(this.list, other.list));
 		reverse(this.list,other.list,f.list);
-		if(f.list.get(0)<0) f.isCharged = true;
+		if(f.list.get(0)<0)
+			f.isCharged = true;
 		return f;
 	}
 
@@ -321,13 +319,11 @@ public class BigInt implements BigIntInterface
 			if (tempSum >= 10 || tempSum <= -10) {
 				carry = tempSum / 10;
 				tempSum %=10;
-			} else {
+			} else
 				carry = 0;
-			}
 			sum.add(tempSum);
 		}
 		if (carry != 0) sum.add(carry);
-
 		return sum;
 	}
 
@@ -534,8 +530,8 @@ public class BigInt implements BigIntInterface
 	{
 		makeAbs(other);
 		Karatsuba karatsuba = new Karatsuba();
-		return sendToKaratsuba(karatsuba,toStringArrayList(this.list)
-				,toStringArrayList(other.list));
+		return sendToKaratsuba(karatsuba, toStrArrList(this.list)
+				, toStrArrList(other.list));
 	}
 
 	/**
@@ -632,6 +628,7 @@ public class BigInt implements BigIntInterface
 	 * @param multiplier - Second ArrayList
 	 * @return the product as ArrayList
 	 */
+	//@Deprecated
 	private ArrayList<Integer> multiplyNaive(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
 	{
 		int carry = 0, tempProduct;
@@ -1073,9 +1070,10 @@ public class BigInt implements BigIntInterface
 	@SafeVarargs
 	private final ArrayList<Integer> getProduct(ArrayList<Integer> ... lists)
 	{
+		//Karatsuba karatsuba = new Karatsuba();
 		return lists[0].size()==1 && lists[1].size()==1
 				? singleDigitMultCase(lists[0],lists[1])
-				: multiplyNaive(lists[0],lists[1]);
+				: multiplyNaive(lists[0],lists[1]); //karatsuba.toAList(karatsuba.multiply(toStrArrList(lists[0]), toStrArrList(lists[1]),10));
 	}
 
 	/**
@@ -1107,7 +1105,7 @@ public class BigInt implements BigIntInterface
 	 * all results must be an Integer so that leaves having negative
 	 * exponents out the scope.
 	 *
-	 * Throws {@link NegativeExponentException} if exponent<0
+	 * Throws {@link NegativeExponentException} if exponent {@literal <0}
 	 * @param exponent - value to be tested
 	 */
 	private void validateExponent(int exponent)
@@ -1137,6 +1135,7 @@ public class BigInt implements BigIntInterface
 	 * @param exponent - exponent value int
 	 * @return <tt>(this<sup>exponent</sup>)</tt>
 	 */
+	@Deprecated
 	private BigInt recursiveExpo(ArrayList<Integer> org,ArrayList<Integer> newlist,
 	                             int exponent) {
 		if(exponent == 1)
@@ -1152,7 +1151,8 @@ public class BigInt implements BigIntInterface
 	 * <p>exponent = 0                   return 1</p>
 	 * <p>array * expo(a, --exponent)    if exponent is odd</p>
 	 * <p>expo(array, exponent/2)^2      if exponent is even</p>
-	 *
+	 * @param expo - int
+	 * @param org - array list
 	 * @return BigInt - expo
 	 */
 	private BigInt expoBySquaring(ArrayList<Integer> org, int expo)
@@ -1161,21 +1161,22 @@ public class BigInt implements BigIntInterface
 			return new BigInt("1");
 		else if(expo % 2 == 1)
 			return new BigInt(new Karatsuba()
-					.multiply(toStringArrayList(org),expoBySquaring(org,--expo).toString(),10));
+					.multiply(toStrArrList(org),expoBySquaring(org,--expo).toString(),10));
 		else{
 			BigInt p = expoBySquaring(org,expo >>> 1);
 			return p.multiply(p);
 		}
 	}
 	/**
-	 * if n is odd -> x(x^2)^(n-1/2)
-	 * if n is even -> (x^2)^(n/2)
+	 * {@literal if n is odd -> x(x^2)^(n-1/2)}
+	 * {@literal if n is even -> (x^2)^(n/2)}
 	 *
 	 *
 	 * @param org - al
 	 * @param expo - duh!
 	 * @return result
 	 */
+	@Deprecated
 	@SuppressWarnings("unused")
 	private BigInt expoAddition(ArrayList<Integer> org, int expo)
 	{
@@ -1224,16 +1225,26 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Package Private. The length of the Arraylist
+	 * @return int length
+	 */
+	int getArListLen()
+	{
+		return this.list.size();
+	}
+
+	/**
 	 * Converts the arrayList to a string using regex
 	 * @param array - ArrayList
 	 * @return string representation
 	 */
-	private String toStringArrayList(ArrayList<Integer> array)
+	private String toStrArrList(ArrayList<Integer> array)
 	{
 		return array.toString().replaceAll(",", "")
 				.replaceAll("\\[","").replaceAll("]","")
 				.replaceAll(" ","");
 	}
+
 	/**
 	 * Returns true is {@code this < other}
 	 * @param other BigInt object

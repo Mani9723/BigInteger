@@ -211,6 +211,7 @@ public class BigInt implements BigIntInterface
 		this.list = numberArray;
 	}
 
+	@SuppressWarnings("unused")
 	private BigInt(String arrayList, boolean isValid)
 	{
 		if(isValid){
@@ -540,9 +541,16 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Divides the Multplication into cases.
+	 * If it's single digits it just multiplies the two numbers and
+	 * returns the result.
 	 *
-	 * @param other
-	 * @return
+	 * Otherwise it uses Karatsuba multiplication algorithm to multiply the numbers.
+	 * Sets the {@link #isCharged} to true so that the negative sign can be tacked
+	 * in the final string representation of the object.
+	 *
+	 * @param other - Multiplicand object
+	 * @return BigInt product
 	 */
 	private BigInt mulCases(BigInt other)
 	{
@@ -557,9 +565,12 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * First changes to absolute value.
 	 *
-	 * @param other
-	 * @return
+	 * Sends to {@link #sendToKaratsuba(Karatsuba, String, String)}
+	 * to calculate the product.
+	 * @param other - BigInt Object
+	 * @return product
 	 */
 	private String karatsubaMultiplication(BigInt other)
 	{
@@ -569,11 +580,17 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Uses the Karatsuba class to calculate the product
 	 *
-	 * @param karatsuba
-	 * @param s
-	 * @param s1
-	 * @return
+	 * If the string has the negative '-' character in the front, only the string
+	 * after the sign is taken into the method.
+	 *
+	 * Everything is in base 10
+	 *
+	 * @param karatsuba - Karatsuba object
+	 * @param s - Multiplicand
+	 * @param s1 - Multiplier
+	 * @return product
 	 */
 	private String sendToKaratsuba(Karatsuba karatsuba, String s, String s1)
 	{
@@ -609,6 +626,7 @@ public class BigInt implements BigIntInterface
 	 * @param multiplier- ArrayList
 	 * @return The product as an ArrayList
 	 */
+	@SuppressWarnings("unused")
 	private ArrayList<Integer> multiplyByCases(BigInt other,
 	                                           ArrayList<Integer> multiplicand,
 	                                           ArrayList<Integer> multiplier)
@@ -769,7 +787,7 @@ public class BigInt implements BigIntInterface
 		}
 		return mod;
 	}
-	
+
 	/**
 	 * Checks whether the divisor value is 0.
 	 * If this test passes, the division process
@@ -1414,6 +1432,11 @@ public class BigInt implements BigIntInterface
 		return this.list.size() > other.list.size() ? 1 : -1;
 	}
 
+	/**
+	 * Boolean Method
+	 * @param other - BigInt
+	 * @return true is  atleast one BigInt object is negative but not both.
+	 */
 	private boolean isOneNegative(BigInt other)
 	{
 		return !(this.isCharged && other.isCharged)

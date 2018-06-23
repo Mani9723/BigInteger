@@ -20,81 +20,39 @@ import java.util.LinkedHashMap;
  *
  *     <table summary = "Primitive Data Types" border = 1 cellpadding = "5">
  *         <tr>
- *             <th>
- *                 Type
- *             </th>
- *             <th>
- *                 Size
- *             </th>
- *             <th>
- *                 Range
- *             </th>
+ *             <th>Type</th>
+ *             <th>Size</th>
+ *             <th>Range</th>
  *         </tr>
  *         <tr>
- *             <td>
- *                 Byte
- *             </td>
- *             <td>
- *                 16 Bits
- *             </td>
- *             <td>
- *                 -128 .. 127
- *             </td>
+ *             <td>Byte</td>
+ *             <td>16 Bits</td>
+ *             <td>-128 .. 127</td>
  *         </tr>
  *         <tr>
- *             <td>
- *                 short
- *             </td>
- *             <td>
- *                 16 bits
- *             </td>
- *             <td>
- *                 -32,768 .. 32,767
- *             </td>
+ *             <td>short</td>
+ *             <td>16 bits</td>
+ *             <td>-32,768 .. 32,767</td>
  *         </tr>
  *         <tr>
- *             <td>
- *                 int
- *             </td>
- *             <td>
- *                 32 bits
- *             </td>
- *             <td>
- *                 -2,147,483,648 .. 2,147,483,647
- *             </td>
+ *             <td>int</td>
+ *             <td>32 bits</td>
+ *             <td>-2,147,483,648 .. 2,147,483,647</td>
  *         </tr>
  *         <tr>
- *             <td>
- *                 long
- *             </td>
- *             <td>
- *                 64 bits
- *             </td>
- *             <td>
- *                 -9,223,372,036,854,775,808 .. 9,223,372,036,854,775,807
- *             </td>
+ *             <td>long</td>
+ *             <td>64 bits</td>
+ *             <td>-9,223,372,036,854,775,808 .. 9,223,372,036,854,775,807</td>
  *         </tr>
  *         <tr>
- *             <td>
- *                 float
- *             </td>
- *             <td>
- *                 32 bits
- *             </td>
- *             <td>
- *                 3.40282347 x 1038, 1.40239846 x 10-45
- *             </td>
+ *             <td>float</td>
+ *             <td>32 bits</td>
+ *             <td>3.40282347 x 1038, 1.40239846 x 10-45</td>
  *         </tr>
  *         <tr>
- *             <td>
- *                 double
- *             </td>
- *             <td>
- *                 64 bits
- *             </td>
- *             <td>
- *                 1.7976931348623157 x 10308, 4.9406564584124654 x 10-324
- *             </td>
+ *             <td>double</td>
+ *             <td>64 bits</td>
+ *             <td>1.7976931348623157 x 10308, 4.9406564584124654 x 10-324</td>
  *         </tr>
  *     </table>
  *
@@ -115,13 +73,12 @@ import java.util.LinkedHashMap;
  * Only {x | x E Z}.
  *
  * This class provides {@link #add(BigInt)}, {@link #subtract(BigInt)},
- * {@link #multiply(BigInt)}multiplication, division*, and modulus*.
+ * {@link #multiply(BigInt)}multiplication, division2, and modulus.
  * There are a couple of comparison option such as {@link #isEqualTo(BigInt)} and {@link #compareTo(BigInt)}
  *
  * Overall, this class has been tested thoroughly using the JUnit4 Testing framework
  * on all methods with 100% coverage.
  *
- *------*: refers to features that are under development.
  * @author Mani Shah
  * @version 2.1
  * @since 4/4/18
@@ -130,6 +87,7 @@ import java.util.LinkedHashMap;
 //Hare Krsna
 public class BigInt implements BigIntInterface
 {
+
 	/**
 	 * This private instance ArrayList {@code #list} will hold the current
 	 * arraylist that the BigInt object is referencing.
@@ -1435,7 +1393,7 @@ public class BigInt implements BigIntInterface
 	/**
 	 * Boolean Method
 	 * @param other - BigInt
-	 * @return true is  atleast one BigInt object is negative but not both.
+	 * @return true if at least one BigInt object is negative but not both.
 	 */
 	private boolean isOneNegative(BigInt other)
 	{
@@ -1472,8 +1430,10 @@ public class BigInt implements BigIntInterface
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		if (this.isCharged) stringBuilder.append('-');
+
 		for (Integer aNumberArray : this.list)
 			stringBuilder.append(Math.abs(aNumberArray));
+
 		String finalString = stringBuilder.toString();
 		return finalString.matches("^[0]+$") ? finalString.substring(0, 1)
 				: finalString.replaceFirst("^0*", "");

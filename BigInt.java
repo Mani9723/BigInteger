@@ -534,7 +534,8 @@ public class BigInt implements BigIntInterface
 	{
 		makeAbs(other);
 		Karatsuba karatsuba = new Karatsuba();
-		return sendToKaratsuba(karatsuba,this.toString(),other.toString());
+		return sendToKaratsuba(karatsuba,toStringArrayList(this.list)
+				,toStringArrayList(other.list));
 	}
 
 	/**
@@ -1094,12 +1095,9 @@ public class BigInt implements BigIntInterface
 	{
 		validateExponent(exponent);
 		BigInt expoResult;
-		if(exponent == 0) expoResult = new BigInt("1");
-		else if(exponent == 1) expoResult = this;
+		if(exponent == 1) expoResult = this;
 		else {
-			reverse(this.list);
-			expoResult = expoAddition(this.list,exponent);
-			reverse(this.list,expoResult.list);
+			expoResult = expoBySquaring(this.list,exponent);
 		}
 		return expoResult;
 	}
@@ -1150,6 +1148,26 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 *
+	 * <p>exponent = 0                   return 1</p>
+	 * <p>array * expo(a, --exponent)    if exponent is odd</p>
+	 * <p>expo(array, exponent/2)^2      if exponent is even</p>
+	 *
+	 * @return BigInt - expo
+	 */
+	private BigInt expoBySquaring(ArrayList<Integer> org, int expo)
+	{
+		if(expo == 0)
+			return new BigInt("1");
+		else if(expo % 2 == 1)
+			return new BigInt(new Karatsuba()
+					.multiply(toStringArrayList(org),expoBySquaring(org,--expo).toString(),10));
+		else{
+			BigInt p = expoBySquaring(org,expo >>> 1);
+			return p.multiply(p);
+		}
+	}
+	/**
 	 * if n is odd -> x(x^2)^(n-1/2)
 	 * if n is even -> (x^2)^(n/2)
 	 *
@@ -1158,6 +1176,7 @@ public class BigInt implements BigIntInterface
 	 * @param expo - duh!
 	 * @return result
 	 */
+	@SuppressWarnings("unused")
 	private BigInt expoAddition(ArrayList<Integer> org, int expo)
 	{
 		int secondPow = (expo-1) >>> 1;
@@ -1204,6 +1223,17 @@ public class BigInt implements BigIntInterface
 			array.add(lastPos, 0);
 	}
 
+	/**
+	 * Converts the arrayList to a string using regex
+	 * @param array - ArrayList
+	 * @return string representation
+	 */
+	private String toStringArrayList(ArrayList<Integer> array)
+	{
+		return array.toString().replaceAll(",", "")
+				.replaceAll("\\[","").replaceAll("]","")
+				.replaceAll(" ","");
+	}
 	/**
 	 * Returns true is {@code this < other}
 	 * @param other BigInt object

@@ -105,6 +105,13 @@ public class BigInt implements BigIntInterface
 	private boolean isCharged = false;
 
 	/**
+	 * String variable that holds the string representation of the BigInteger
+	 * Useful when methods require string inputs since changing an arraylist 
+	 * to string is time consuming.
+	 */
+	private String bigIntString;
+
+	/**
 	 * The Packacge Private main constructor accepts a string argument.
 	 * Since a string can be of arbritary length, only the memory of
 	 * the machine is the limiting factor.
@@ -122,11 +129,11 @@ public class BigInt implements BigIntInterface
 	 */
 	BigInt(String val)
 	{
-		String absValue = verifySignAndMinLength(val);
+		this.bigIntString = verifySignAndMinLength(val);
 
 		try {
-			if (isInputValid(absValue))
-				storeInArrayList(absValue);
+			if (isInputValid(this.bigIntString))
+				storeInArrayList(this.bigIntString);
 		} catch (InvalidInputException e) {
 			e.getMessage();
 			e.printStackTrace();
@@ -169,6 +176,12 @@ public class BigInt implements BigIntInterface
 		this.list = numberArray;
 	}
 
+	/**
+	 * Private method thatbypassess all checks because the input is valid
+	 * and stores the string in an array list
+	 * @param arrayList - string
+	 * @param isValid - boolean
+	 */
 	@SuppressWarnings("unused")
 	private BigInt(String arrayList, boolean isValid)
 	{
@@ -530,8 +543,7 @@ public class BigInt implements BigIntInterface
 	{
 		makeAbs(other);
 		Karatsuba karatsuba = new Karatsuba();
-		return sendToKaratsuba(karatsuba, toStrArrList(this.list)
-				, toStrArrList(other.list));
+		return sendToKaratsuba(karatsuba, this.bigIntString,other.bigIntString);
 	}
 
 	/**
@@ -1095,7 +1107,7 @@ public class BigInt implements BigIntInterface
 		BigInt expoResult;
 		if(exponent == 1) expoResult = this;
 		else {
-			expoResult = expoBySquaring(this.list,exponent);
+			expoResult = new BigInt(expoBySquaring(this.bigIntString,exponent));
 		}
 		return expoResult;
 	}
@@ -1152,21 +1164,22 @@ public class BigInt implements BigIntInterface
 	 * <p>array * expo(a, --exponent)    if exponent is odd</p>
 	 * <p>expo(array, exponent/2)^2      if exponent is even</p>
 	 * @param expo - int
-	 * @param org - array list
+	 * @param bigIntString - string
 	 * @return BigInt - expo
 	 */
-	private BigInt expoBySquaring(ArrayList<Integer> org, int expo)
+	private String expoBySquaring(String bigIntString,int expo)
 	{
+		Karatsuba karatsuba = new Karatsuba();
 		if(expo == 0)
-			return new BigInt("1");
+			return "1";
 		else if(expo % 2 == 1)
-			return new BigInt(new Karatsuba()
-					.multiply(toStrArrList(org),expoBySquaring(org,--expo).toString(),10));
+			return karatsuba.multiply(bigIntString,expoBySquaring(bigIntString,--expo),10);
 		else{
-			BigInt p = expoBySquaring(org,expo >>> 1);
-			return p.multiply(p);
+			String s = expoBySquaring(bigIntString,expo >>> 1);
+			return karatsuba.multiply(s,s,10);
 		}
 	}
+
 	/**
 	 * {@literal if n is odd -> x(x^2)^(n-1/2)}
 	 * {@literal if n is even -> (x^2)^(n/2)}
@@ -1238,6 +1251,7 @@ public class BigInt implements BigIntInterface
 	 * @param array - ArrayList
 	 * @return string representation
 	 */
+	@SuppressWarnings("unused")
 	private String toStrArrList(ArrayList<Integer> array)
 	{
 		return array.toString().replaceAll(",", "")
@@ -1454,6 +1468,18 @@ public class BigInt implements BigIntInterface
 		for (Integer aNumberArray : numberArray)
 			negatedArray.add(aNumberArray * -1);
 		return negatedArray;
+	}
+
+	/**
+	 * Converts array list to string without any checks because the input is correct.
+	 * @return string
+	 */
+	private String straightToString()
+	{
+		StringBuilder s = new StringBuilder();
+		for(Integer integer : this.list)
+			s.append(integer);
+		return s.toString();
 	}
 
 	/**

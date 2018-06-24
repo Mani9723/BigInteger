@@ -1663,7 +1663,7 @@ public class BigIntTest {
 	public void testExponentV6()
 	{
 		b1 = new BigInt("2");
-		assertEquals("64",b1.pow(6).toString());
+		assertEquals("1024",b1.pow(10).toString());
 	}
 
 	@Test
@@ -1843,12 +1843,12 @@ public class BigIntTest {
 				"7778767277237724667326723673127326327324727278978927236723" +
 				"763672872349782978234673245623467347890238471562341" +
 				"23418236451872345817348716523847658917235475187354123451334");
-		//BigInteger c = new BigInteger(b1.toString()),d;
 		long st = System.currentTimeMillis();
-		b2 = b1.pow(15);
+		int pow = 20;
+		b2 = b1.pow(pow);
 		System.out.println(System.currentTimeMillis() - st);
 		String num = b2.toString();
-		System.out.println("a = " + b1.getArListLen()+" digits," +" a^25: " + b2.getArListLen() + " digits");
+		System.out.printf("a = %d digits, a^%d: %d digits\n",b1.getArListLen(),pow,b2.getArListLen());
 		assertEquals(num,num);
 	}
 }

@@ -11,6 +11,7 @@ import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import static java.lang.Long.*;
 
 /**
  *
@@ -88,6 +89,8 @@ import java.util.LinkedHashMap;
 public class BigInt implements BigIntInterface
 {
 
+
+	final static BigInt ONE = new BigInt("1");
 	/**
 	 * This private instance ArrayList {@code #list} will hold the current
 	 * arraylist that the BigInt object is referencing.
@@ -105,11 +108,25 @@ public class BigInt implements BigIntInterface
 	private boolean isCharged = false;
 
 	/**
-	 * String variable that holds the string representation of the BigInteger
-	 * Useful when methods require string inputs since changing an arraylist 
-	 * to string is time consuming.
+	 * Holds the string Absolute Value representation of the BigInteger.
+	 */
+	private String absBigIntStr;
+
+	/**
+	 * Holds original signed representation of BigInt.
 	 */
 	private String bigIntString;
+
+	/**
+	 * Holds the max value for long
+	 */
+	private long LONG_MAX_VAL;
+
+	/**
+	 * This number determines if the karatsuba should be used or not.
+	 */
+	private final int MULTIPLY_THRESHOLD = 80;
+
 
 	/**
 	 * The Packacge Private main constructor accepts a string argument.
@@ -129,16 +146,18 @@ public class BigInt implements BigIntInterface
 	 */
 	BigInt(String val)
 	{
-		this.bigIntString = verifySignAndMinLength(val);
+		this.bigIntString = val;
+		this.absBigIntStr = verifySignAndMinLength(val);
 
 		try {
-			if (isInputValid(this.bigIntString))
-				storeInArrayList(this.bigIntString);
+			if (isInputValid(this.absBigIntStr))
+				storeInArrayList(this.absBigIntStr);
 		} catch (InvalidInputException e) {
 			e.getMessage();
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		LONG_MAX_VAL = MAX_VALUE;
 	}
 
 	/**
@@ -162,6 +181,7 @@ public class BigInt implements BigIntInterface
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		LONG_MAX_VAL = MAX_VALUE;
 	}
 
 	/**
@@ -174,11 +194,13 @@ public class BigInt implements BigIntInterface
 	private BigInt(ArrayList<Integer> numberArray)
 	{
 		this.list = numberArray;
+		LONG_MAX_VAL = MAX_VALUE;
 	}
 
 	/**
-	 * Private method thatbypassess all checks because the input is valid
+	 * Private method that bypassess all checks because the input is guaranteed valid
 	 * and stores the string in an array list
+	 *
 	 * @param arrayList - string
 	 * @param isValid - boolean
 	 */
@@ -188,7 +210,9 @@ public class BigInt implements BigIntInterface
 		if(isValid){
 			storeInArrayList(arrayList);
 		}
+		LONG_MAX_VAL = MAX_VALUE;
 	}
+
 	/**
 	 * This method simply looks for a positve or a negative sign in front of the user input
 	 * and initializes the boolean instance variable if the sign is negative.
@@ -217,7 +241,7 @@ public class BigInt implements BigIntInterface
 	 *
 	 * @param value - String value to be tested
 	 * @return boolean indicating the success or failure of the test
-	 * @throws InvalidInputException - Handles the exception.
+	 * @throws InvalidInputException - if non numeric value is found.
 	 */
 	private boolean isInputValid(String value) throws InvalidInputException
 	{
@@ -480,8 +504,9 @@ public class BigInt implements BigIntInterface
 				borrow = 0;
 			}
 			difference.add(tempDiff);
-		}if(difference.get(difference.size()-1) == 0)
-		difference.remove(difference.size()-1);
+		}
+		if(difference.get(difference.size()-1) == 0)
+			difference.remove(difference.size()-1);
 
 		return difference;
 	}
@@ -502,8 +527,10 @@ public class BigInt implements BigIntInterface
 	public BigInt multiply(BigInt other)
 	{
 		BigInt product;
-		product = mulCases(other);
+		product = (this.length() < MULTIPLY_THRESHOLD || other.length() < MULTIPLY_THRESHOLD)
+				? new BigInt(multiplyByCases(other,this.list,other.list)) : mulCases(other);
 		makeAbs(other);
+		if(isOneNegative(other)) product.isCharged = true;
 		return product;
 	}
 
@@ -526,16 +553,16 @@ public class BigInt implements BigIntInterface
 			return new BigInt(Integer.toString(this.list.get(0)*other.list.get(0)));
 		else
 			product = karatsubaMultiplication(other);
-		if(isOneNegative(other))
-			return new BigInt("-" + product);
+//		if(isOneNegative(other))
+//			return new BigInt("-" + product);
 		return new BigInt(product);
 	}
 
 	/**
 	 * First changes to absolute value.
-	 *
-	 * Sends to {@link #sendToKaratsuba(Karatsuba, String, String)}
+	 *  Sends to Karatsuba
 	 * to calculate the product.
+	 *
 	 * @param other - BigInt Object
 	 * @return product
 	 */
@@ -543,7 +570,7 @@ public class BigInt implements BigIntInterface
 	{
 		makeAbs(other);
 		Karatsuba karatsuba = new Karatsuba();
-		return sendToKaratsuba(karatsuba, this.bigIntString,other.bigIntString);
+		return karatsuba.multiply(this.absBigIntStr,other.absBigIntStr,10);
 	}
 
 	/**
@@ -559,16 +586,11 @@ public class BigInt implements BigIntInterface
 	 * @param s1 - Multiplier
 	 * @return product
 	 */
+	@Deprecated
+	@SuppressWarnings("unused")
 	private String sendToKaratsuba(Karatsuba karatsuba, String s, String s1)
 	{
-		String modifS = s.substring(1,s.length()), modifS1 = s1.substring(1,s1.length());
-		if(s.charAt(0) == '-' && s1.charAt(0) == '-')
-			return karatsuba.multiply(modifS,modifS1,10);
-		else if(s.charAt(0) == '-')
-			return karatsuba.multiply(modifS,s1,10);
-		else if(s1.charAt(0)== '-')
-			return karatsuba.multiply(s,modifS1,10);
-		else return karatsuba.multiply(s,s1,10);
+		return karatsuba.multiply(s,s1,10);
 	}
 
 	/**
@@ -598,6 +620,7 @@ public class BigInt implements BigIntInterface
 	                                           ArrayList<Integer> multiplicand,
 	                                           ArrayList<Integer> multiplier)
 	{
+		reverse(multiplicand,multiplier);
 		ArrayList<Integer> product = new ArrayList<>();
 		if(multiplicand.size()==1 && multiplier.size()==1)
 			product.add(multiplicand.get(0)*multiplier.get(0));
@@ -605,11 +628,8 @@ public class BigInt implements BigIntInterface
 			product = multiplicand.size() < multiplier.size() ?
 					multiplyNaive(multiplier, multiplicand)
 					: multiplyNaive(multiplicand, multiplier);
-			if(!(this.isCharged && other.isCharged)&&
-					(this.isCharged || other.isCharged)){
-				product = negate(product);
-			}
 		}
+		reverse(multiplicand,multiplier,product);
 		return product;
 	}
 
@@ -640,7 +660,6 @@ public class BigInt implements BigIntInterface
 	 * @param multiplier - Second ArrayList
 	 * @return the product as ArrayList
 	 */
-	//@Deprecated
 	private ArrayList<Integer> multiplyNaive(ArrayList<Integer> multiplicand, ArrayList<Integer> multiplier)
 	{
 		int carry = 0, tempProduct;
@@ -1032,7 +1051,7 @@ public class BigInt implements BigIntInterface
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		int index = 1, result = 1;
-		if(isLessThan(divn,table.get(1))==-1)
+		if(isLessThan(divn,table.get(1)) == -1)
 			product.add(0);
 		else {
 			while (result == 1 && index < 10) {
@@ -1107,7 +1126,7 @@ public class BigInt implements BigIntInterface
 		BigInt expoResult;
 		if(exponent == 1) expoResult = this;
 		else {
-			expoResult = new BigInt(expoBySquaring(this.bigIntString,exponent));
+			expoResult = new BigInt(expoBySquaring(this.absBigIntStr,exponent));
 		}
 		return expoResult;
 	}
@@ -1241,7 +1260,7 @@ public class BigInt implements BigIntInterface
 	 * Package Private. The length of the Arraylist
 	 * @return int length
 	 */
-	int getArListLen()
+	int length()
 	{
 		return this.list.size();
 	}
@@ -1446,6 +1465,20 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Checks to see id the object fits in a Long data type
+	 * @param other - BigInt
+	 * @return true if it fits
+	 */
+	@Deprecated
+	private boolean isWithinLong(BigInt other)
+	{
+		int posLongLen = Long.toString(LONG_MAX_VAL).length();
+		if(this.absBigIntStr.length() > posLongLen || other.absBigIntStr.length() > posLongLen)
+			return false;
+		else return this.absBigIntStr.charAt(1) <= 2 && other.absBigIntStr.charAt(1) <= 2;
+	}
+
+	/**
 	 * Boolean Method
 	 * @param other - BigInt
 	 * @return true if at least one BigInt object is negative but not both.
@@ -1474,6 +1507,8 @@ public class BigInt implements BigIntInterface
 	 * Converts array list to string without any checks because the input is correct.
 	 * @return string
 	 */
+	@Deprecated
+	@SuppressWarnings("unused")
 	private String straightToString()
 	{
 		StringBuilder s = new StringBuilder();
@@ -1485,9 +1520,6 @@ public class BigInt implements BigIntInterface
 	/**
 	 * Overrides the Object class's toString method and prints the string of BigInt.
 	 * Uses Stringbuilder class rather than the standard + sign to concat the strings.
-	 * It does a final check for negative numbers. That method should only go past the
-	 * first element if that first element happens to be 0 otherwise 99% of the time
-	 * it will only have to check the first element for a negative value.
 	 * I decided to use regex to check if there were any leading zeros in the arraylist
 	 * due to subtraction or addition
 	 * @return String representation of the object

@@ -1538,3 +1538,4 @@ public class BigInt implements BigIntInterface
 				: finalString.replaceFirst("^0*", "");
 	}
 }
+

@@ -1504,8 +1504,10 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * Converts array list to string without any checks because the input is correct.
-	 * @return string
+	 * Converts array list to string without any checks because the 
+	 * input has passed all the intial checks that the contructor goes through
+	 * when initializing the object.
+	 * @return string representation of ArrayList
 	 */
 	@Deprecated
 	@SuppressWarnings("unused")

@@ -2,8 +2,6 @@
 
 ###### This is my own version of BigInteger Class
 
-Since the primitive data types can only hold limited information,\
-I have written my own version of BigInteger class.
 
 The following methods are are public and provided in this class:
 - Add
@@ -16,16 +14,17 @@ The following methods are are public and provided in this class:
 - Minimum
 - Maximum
 - Equals
+- Length
 - Comparison
 - toString
 
 ## Dependencies
 
-This class implements the BigInt Interface\
+This class implements the BigInt Interface and needs Katartsuba.java, FileReader.java, Exception Classes.
 
 ## Tests
 
-I have provided JUnit4 Test class with 121 test cases that has 100% coverage in the class.
+I have provided JUnit4 Test class with 122 test cases that has 100% coverage in the class.
 
 ## Exceptions
 

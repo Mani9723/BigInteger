@@ -1,14 +1,22 @@
 package RevisedBigInt.Exceptions;
 
+/**
+ * Thrown if the user enter non numerical data
+ */
 public class InvalidInputException extends Exception
 {
-
-	public InvalidInputException()
-	{
+	/**
+	 * Default
+	 */
+	public InvalidInputException() {
 		super();
 	}
-	public InvalidInputException(String message)
-	{
+
+	/**
+	 * User Message
+	 * @param message - Message
+	 */
+	public InvalidInputException(String message) {
 		super(message);
 	}
 }

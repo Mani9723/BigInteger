@@ -1848,7 +1848,7 @@ public class BigIntTest {
 		b2 = b1.pow(pow);
 		System.out.println(System.currentTimeMillis() - st);
 		String num = b2.toString();
-		System.out.printf("a = %d digits, a^%d: %d digits\n",b1.getArListLen(),pow,b2.getArListLen());
+		System.out.printf("a = %d digits, a^%d: %d digits\n",b1.length(),pow,b2.length());
 		assertEquals(num,num);
 	}
 }

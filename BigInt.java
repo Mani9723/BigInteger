@@ -144,7 +144,7 @@ public class BigInt implements BigIntInterface
 	 *
 	 * @param val - The input provided by the user.
 	 */
-	BigInt(String val)
+	public BigInt(String val)
 	{
 		this.bigIntString = val;
 		this.absBigIntStr = verifySignAndMinLength(val);
@@ -169,7 +169,7 @@ public class BigInt implements BigIntInterface
 	 * converted into the proper arraylist.
 	 * @param file - File Object representing the file to be read.
 	 */
-	BigInt(File file)
+	public BigInt(File file)
 	{
 		String path = file.getPath();
 		BigIntFileReader fileContents = new BigIntFileReader(path);
@@ -294,7 +294,7 @@ public class BigInt implements BigIntInterface
 	 *
 	 * @return BigInt
 	 */
-	BigInt absValue()
+	public BigInt absValue()
 	{
 		return this.isCharged ? new BigInt(this.negate(this.list)) : this;
 	}
@@ -965,7 +965,8 @@ public class BigInt implements BigIntInterface
 	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor,
 	                                      boolean mod)
 	{
-		LinkedHashMap<Integer,ArrayList<Integer>> table = new LinkedHashMap<>(storeProductLHMap(divisor));
+		LinkedHashMap<Integer,ArrayList<Integer>> table;
+		table = new LinkedHashMap<>(storeProductLHMap(divisor));
 
 		ArrayList<Integer> quotient = new ArrayList<>(),currDividend, tempDivd, product;
 
@@ -1120,7 +1121,7 @@ public class BigInt implements BigIntInterface
 	 * @param exponent - value of the exponent
 	 * @return <tt>(this<sup>exponent</sup>)</tt>
 	 */
-	BigInt pow(int exponent)
+	public BigInt pow(int exponent)
 	{
 		validateExponent(exponent);
 		BigInt expoResult;
@@ -1257,15 +1258,6 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * Package Private. The length of the Arraylist
-	 * @return int length
-	 */
-	int length()
-	{
-		return this.list.size();
-	}
-
-	/**
 	 * Converts the arrayList to a string using regex
 	 * @param array - ArrayList
 	 * @return string representation
@@ -1320,7 +1312,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt object
 	 * @return boolean
 	 */
-	boolean isEqualTo(BigInt other)
+	public boolean isEqualTo(BigInt other)
 	{
 		return this.list.equals(other.list);
 	}
@@ -1331,7 +1323,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt to be compared
 	 * @return the larger BigInt Object
 	 */
-	BigInt max(BigInt other)
+	public BigInt max(BigInt other)
 	{
 		return this.isLessThan(other) ? other : this;
 	}
@@ -1342,7 +1334,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - Value to be compared with
 	 * @return the minimum BigInt
 	 */
-	BigInt min(BigInt other)
+	public BigInt min(BigInt other)
 	{
 		return this.isLessThan(other) ? this : other;
 	}
@@ -1356,7 +1348,7 @@ public class BigInt implements BigIntInterface
 	 * @param other - BigInt object
 	 * @return int value: 0,1,-1
 	 */
-	int compareTo(BigInt other)
+	public int compareTo(BigInt other)
 	{
 		return this.isEqualTo(other) ? 0 : separatePosNegCompare(other);
 	}
@@ -1386,7 +1378,8 @@ public class BigInt implements BigIntInterface
 	 */
 	private int compareBasedOnLength(BigInt other)
 	{
-		return getLen(other) == 1 ? 1 : -1;
+		if(this.absBigIntStr.length() == other.absBigIntStr.length()) return 0;
+		return this.absBigIntStr.length() > other.absBigIntStr.length() ? 1 : -1;
 	}
 
 	/**
@@ -1435,6 +1428,9 @@ public class BigInt implements BigIntInterface
 	 * This method handles comparison when either of the arraylist are negative.
 	 * {@code -A < B}
 	 * {@code A > -B}
+	 * Separates into two groups. Both are negative or only one is negative.
+	 * if only one is negative then the positive one is returned.
+	 * If both are negative and have different lengths then the shorter one is returned.
 	 *
 	 * -A and -B then {@link #compareEachNumber(BigInt)} will be called.
 	 *
@@ -1443,12 +1439,15 @@ public class BigInt implements BigIntInterface
 	 */
 	private int handleNegCompCases(BigInt other)
 	{
-		int lenResult = this.getLen(other);
-		if(lenResult != 0) {
-			if (this.isCharged && !other.isCharged) return -1;
-			else if (!this.isCharged && other.isCharged) return 1;
-			return (this.isCharged && lenResult == 1) ? -1 : 1;
-		}else return compareEachNumber(other);
+		if(isOneNegative(other)){
+			if(this.isCharged && !other.isCharged) return -1;
+			else if(!this.isCharged &&  other.isCharged) return 1;
+		}else {
+			int len = this.compareBasedOnLength(other);
+			if (len == 1) return -1;
+			else if (len == -1) return 1;
+		}
+		return compareEachNumber(other);
 	}
 
 	/**
@@ -1458,18 +1457,20 @@ public class BigInt implements BigIntInterface
 	 * @param other BigInt object
 	 * @return int 1,-1
 	 */
+	@Deprecated
 	private int getLen(BigInt other)
 	{
-		if(this.list.size() == other.list.size()) return 0;
-		return this.list.size() > other.list.size() ? 1 : -1;
+		if(this.absBigIntStr.length() == other.absBigIntStr.length()) return 0;
+		return this.absBigIntStr.length() > other.absBigIntStr.length() ? 1 : -1;
 	}
 
 	/**
-	 * Checks to see id the object fits in a Long data type
+	 * Checks to see if the object fits in a Long data type
 	 * @param other - BigInt
 	 * @return true if it fits
 	 */
 	@Deprecated
+	@SuppressWarnings("unused")
 	private boolean isWithinLong(BigInt other)
 	{
 		int posLongLen = Long.toString(LONG_MAX_VAL).length();
@@ -1479,7 +1480,7 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * Boolean Method
+	 * ONLY USED DURING MULTIPLICATION AND DIVISION
 	 * @param other - BigInt
 	 * @return true if at least one BigInt object is negative but not both.
 	 */
@@ -1487,6 +1488,15 @@ public class BigInt implements BigIntInterface
 	{
 		return !(this.isCharged && other.isCharged)
 				&&(this.isCharged || other.isCharged);
+	}
+
+	/**
+	 * Returns the length of the original BigInt string
+	 * @return int
+	 */
+	public int length()
+	{
+		return this.bigIntString.length();
 	}
 
 	/**
@@ -1504,10 +1514,8 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * Converts array list to string without any checks because the 
-	 * input has passed all the intial checks that the contructor goes through
-	 * when initializing the object.
-	 * @return string representation of ArrayList
+	 * Converts array list to string without any checks because the input is correct.
+	 * @return string
 	 */
 	@Deprecated
 	@SuppressWarnings("unused")
@@ -1540,4 +1548,3 @@ public class BigInt implements BigIntInterface
 				: finalString.replaceFirst("^0*", "");
 	}
 }
-

@@ -1,9 +1,7 @@
-package RevisedBigInt;
-
-import RevisedBigInt.Exceptions.InvalidInputException;
-import RevisedBigInt.Exceptions.DivideByZeroException;
-import RevisedBigInt.Exceptions.NegativeExponentException;
-import RevisedBigInt.FileReader.BigIntFileReader;
+import Exceptions.InvalidInputException;
+import Exceptions.DivideByZeroException;
+import Exceptions.NegativeExponentException;
+import FileReader.BigIntFileReader;
 
 import java.io.File;
 import java.lang.Math;
@@ -86,6 +84,7 @@ import static java.lang.Long.*;
  */
 
 //Hare Krsna
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public class BigInt implements BigIntInterface
 {
 
@@ -153,8 +152,7 @@ public class BigInt implements BigIntInterface
 			if (isInputValid(this.absBigIntStr))
 				storeInArrayList(this.absBigIntStr);
 		} catch (InvalidInputException e) {
-			e.getMessage();
-			e.printStackTrace();
+			e.getMessage(); e.printStackTrace();
 			System.exit(-1);
 		}
 		LONG_MAX_VAL = MAX_VALUE;
@@ -273,7 +271,8 @@ public class BigInt implements BigIntInterface
 				this.list.add(Integer.parseInt(value.substring(i, i + 1)) * -1);
 		} else {
 			for (int i = 0; i < len; i++)
-				this.list.add(Integer.parseInt(value.substring(i, i + 1)));
+				this.list.add(Integer.parseInt(Character.toString(value.charAt(i))));
+			//	this.list.add(Integer.parseInt(value.substring(i, i + 1)));
 		}
 	}
 
@@ -965,8 +964,7 @@ public class BigInt implements BigIntInterface
 	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor,
 	                                      boolean mod)
 	{
-		LinkedHashMap<Integer,ArrayList<Integer>> table;
-		table = new LinkedHashMap<>(storeProductLHMap(divisor));
+		LinkedHashMap<Integer,ArrayList<Integer>> table = new LinkedHashMap<>(storeProductLHMap(divisor));
 
 		ArrayList<Integer> quotient = new ArrayList<>(),currDividend, tempDivd, product;
 
@@ -976,9 +974,11 @@ public class BigInt implements BigIntInterface
 		while(currIndexOrgDividend < dividend.size()){
 			product = new ArrayList<>(findQuotient(table,currDividend));
 			quotient.add(product.get(product.size()-1));
-			if(product.size()>1) product.remove(product.size() -1);
+			if(product.size()>1)
+				product.remove(product.size() -1);
 			tempDivd = new ArrayList<>(getNewDividend(currDividend,product));
-			if(tempDivd.size()>1) removeLdZeroDiv(tempDivd);
+			if(tempDivd.size()>1)
+				removeLdZeroDiv(tempDivd);
 			currIndexOrgDividend++;
 			currDividend = new ArrayList<>(tempDivd);
 			if(currIndexOrgDividend < dividend.size()) {
@@ -1052,7 +1052,7 @@ public class BigInt implements BigIntInterface
 	{
 		ArrayList<Integer> product = new ArrayList<>();
 		int index = 1, result = 1;
-		if(isLessThan(divn,table.get(1)) == -1)
+		if(isLessThan(divn,table.get(index)) == -1)
 			product.add(0);
 		else {
 			while (result == 1 && index < 10) {
@@ -1105,7 +1105,8 @@ public class BigInt implements BigIntInterface
 		//Karatsuba karatsuba = new Karatsuba();
 		return lists[0].size()==1 && lists[1].size()==1
 				? singleDigitMultCase(lists[0],lists[1])
-				: multiplyNaive(lists[0],lists[1]); //karatsuba.toAList(karatsuba.multiply(toStrArrList(lists[0]), toStrArrList(lists[1]),10));
+				: multiplyNaive(lists[0],lists[1]);
+		//karatsuba.toAList(karatsuba.multiply(toStrArrList(lists[0]), toStrArrList(lists[1]),10));
 	}
 
 	/**
@@ -1127,7 +1128,7 @@ public class BigInt implements BigIntInterface
 		BigInt expoResult;
 		if(exponent == 1) expoResult = this;
 		else {
-			expoResult = new BigInt(expoBySquaring(this.absBigIntStr,exponent));
+			expoResult = new BigInt(expoBySquaring(this.absBigIntStr,exponent),true);
 		}
 		return expoResult;
 	}
@@ -1258,6 +1259,15 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Package Private. The length of the Arraylist
+	 * @return int length
+	 */
+	public int length()
+	{
+		return this.list.size();
+	}
+
+	/**
 	 * Converts the arrayList to a string using regex
 	 * @param array - ArrayList
 	 * @return string representation
@@ -1350,6 +1360,9 @@ public class BigInt implements BigIntInterface
 	 */
 	public int compareTo(BigInt other)
 	{
+//		if(isWithinLong(other))
+//			return Long.compare(Long.parseLong(this.bigIntString)
+//					,Long.parseLong(other.bigIntString));
 		return this.isEqualTo(other) ? 0 : separatePosNegCompare(other);
 	}
 
@@ -1378,8 +1391,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private int compareBasedOnLength(BigInt other)
 	{
-		if(this.absBigIntStr.length() == other.absBigIntStr.length()) return 0;
-		return this.absBigIntStr.length() > other.absBigIntStr.length() ? 1 : -1;
+		return getLen(other) == 1 ? 1 : -1;
 	}
 
 	/**
@@ -1428,9 +1440,6 @@ public class BigInt implements BigIntInterface
 	 * This method handles comparison when either of the arraylist are negative.
 	 * {@code -A < B}
 	 * {@code A > -B}
-	 * Separates into two groups. Both are negative or only one is negative.
-	 * if only one is negative then the positive one is returned.
-	 * If both are negative and have different lengths then the shorter one is returned.
 	 *
 	 * -A and -B then {@link #compareEachNumber(BigInt)} will be called.
 	 *
@@ -1439,15 +1448,12 @@ public class BigInt implements BigIntInterface
 	 */
 	private int handleNegCompCases(BigInt other)
 	{
-		if(isOneNegative(other)){
-			if(this.isCharged && !other.isCharged) return -1;
-			else if(!this.isCharged &&  other.isCharged) return 1;
-		}else {
-			int len = this.compareBasedOnLength(other);
-			if (len == 1) return -1;
-			else if (len == -1) return 1;
-		}
-		return compareEachNumber(other);
+		int lenResult = this.getLen(other);
+		if(lenResult != 0) {
+			if (this.isCharged && !other.isCharged) return -1;
+			else if (!this.isCharged && other.isCharged) return 1;
+			return (this.isCharged && lenResult == 1) ? -1 : 1;
+		}else return compareEachNumber(other);
 	}
 
 	/**
@@ -1457,19 +1463,20 @@ public class BigInt implements BigIntInterface
 	 * @param other BigInt object
 	 * @return int 1,-1
 	 */
-	@Deprecated
 	private int getLen(BigInt other)
 	{
-		if(this.absBigIntStr.length() == other.absBigIntStr.length()) return 0;
-		return this.absBigIntStr.length() > other.absBigIntStr.length() ? 1 : -1;
+		if(this.list.size() == other.list.size()) return 0;
+		return this.list.size() > other.list.size() ? 1 : -1;
+
+		// This is the method that returns the length of the BigInt Object
 	}
 
 	/**
-	 * Checks to see if the object fits in a Long data type
+	 * Checks to see id the object fits in a Long data type
 	 * @param other - BigInt
 	 * @return true if it fits
 	 */
-	@Deprecated
+	//@Deprecated
 	@SuppressWarnings("unused")
 	private boolean isWithinLong(BigInt other)
 	{
@@ -1480,7 +1487,25 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
-	 * ONLY USED DURING MULTIPLICATION AND DIVISION
+	 * Finds out if the number is even
+	 * @return True if it is even
+	 */
+	public boolean isEven()
+	{
+		return this.list.get(this.list.size()-1)%2 == 0;
+	}
+
+	/**
+	 * Finds out if the number is odd
+	 * @return True if it is odd
+	 */
+	public boolean isOdd()
+	{
+		return this.list.get(this.list.size()-1)%2 != 0;
+	}
+
+	/**
+	 * Boolean Method
 	 * @param other - BigInt
 	 * @return true if at least one BigInt object is negative but not both.
 	 */
@@ -1488,15 +1513,6 @@ public class BigInt implements BigIntInterface
 	{
 		return !(this.isCharged && other.isCharged)
 				&&(this.isCharged || other.isCharged);
-	}
-
-	/**
-	 * Returns the length of the original BigInt string
-	 * @return int
-	 */
-	public int length()
-	{
-		return this.bigIntString.length();
 	}
 
 	/**
@@ -1515,6 +1531,7 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * Converts array list to string without any checks because the input is correct.
+	 * THe input is definitely validated before this method is used.
 	 * @return string
 	 */
 	@Deprecated

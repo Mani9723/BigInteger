@@ -1,6 +1,6 @@
-package RevisedBigInt;
-
+import org.junit.Ignore;
 import org.junit.Test;
+
 import java.io.File;
 import java.math.BigInteger;
 
@@ -11,7 +11,8 @@ import static org.junit.Assert.*;
  *
  * {a,b,c,d,e,f,g E Z}
  */
-public class BigIntTest {
+public class BigIntTest
+{
 
 	/**
 	 * BigInt objects.
@@ -1392,8 +1393,8 @@ public class BigIntTest {
 	public void testFileConstructor()
 	{
 		long startw = System.currentTimeMillis();
-		b1 = new BigInt(new File("src\\RevisedBigInt\\TextFiles\\dividend.txt"));
-		b2 = new BigInt(new File("src\\RevisedBigInt\\TextFiles\\divisor.txt"));
+		b1 = new BigInt(new File("src\\TextFiles\\dividend.txt"));
+		b2 = new BigInt(new File("src\\TextFiles\\divisor.txt"));
 		System.out.println(System.currentTimeMillis()-startw);
 		long start = System.currentTimeMillis();
 		b3 = b1.add(b2);
@@ -1844,11 +1845,66 @@ public class BigIntTest {
 				"763672872349782978234673245623467347890238471562341" +
 				"23418236451872345817348716523847658917235475187354123451334");
 		long st = System.currentTimeMillis();
-		int pow = 20;
+		int pow = 52;
 		b2 = b1.pow(pow);
 		System.out.println(System.currentTimeMillis() - st);
-		String num = b2.toString();
+		//String num = b2.toString();
 		System.out.printf("a = %d digits, a^%d: %d digits\n",b1.length(),pow,b2.length());
-		assertEquals(num,num);
+		assertEquals(new BigInteger(b1.toString()).pow(52).toString(),b2.toString());
 	}
+
+	@Test
+	public void testABS()
+	{
+		assertEquals("1",BigInt.ONE.toString());
+//		b1 = new BigInt("-12345");
+//		//System.out.println(b1.absValue());
+//		assertEquals("12345",b1.absValue().toString());
+	}
+
+	@Test
+	public void testModifiedCompareForLongValue()
+	{
+		b1 = new BigInt("234567890987654321");
+		b2 = new BigInt("234567890987654321");
+		assertEquals(0,b1.compareTo(b2));
+	}
+
+	@Test
+	public void testModifiedCompareForLongValue1()
+	{
+		b1 = new BigInt(Long.toString(Long.MAX_VALUE));
+		b2 = new BigInt(Long.toString(Long.MIN_VALUE));
+		assertEquals(1,b1.compareTo(b2));
+	}
+
+	@Test
+	public void testModifiedCompareForLongValue2()
+	{
+		b1 = new BigInt(Long.toString(Long.MIN_VALUE));
+		b2 = new BigInt(Long.toString(Long.MAX_VALUE));
+		assertEquals(-1,b1.compareTo(b2));
+	}
+
+	@Test
+	public void testModifiedCompareForLongValue3()
+	{
+		b1 = new BigInt(Long.toString(Long.MAX_VALUE-1));
+		b2 = new BigInt(Long.toString(Long.MAX_VALUE));
+		assertEquals(-1,b1.compareTo(b2));
+	}
+
+	@Test
+	public void testOdd()
+	{
+		b1 = new BigInt("284355128375487123547612347860237845876235487");
+		assertTrue(b1.isOdd());
+	}
+	@Test
+	public void testEven()
+	{
+		b1 = new BigInt("28435512837548712354761234786023784587623548");
+		assertTrue(b1.isEven());
+	}
+
 }

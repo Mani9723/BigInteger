@@ -88,8 +88,26 @@ import static java.lang.Long.*;
 public class BigInt implements BigIntInterface
 {
 
-
-	final static BigInt ONE = new BigInt("1");
+	/**
+	 * Static copy of BigInt of -1
+	 */
+	final static BigInt NEGATIVE_One = staticValueOf(-1);
+	/**
+	 * Static copy of BigInt of 0
+	 */
+	final static BigInt ZERO = staticValueOf(0);
+	/**
+	 * Static copy of BigInt of 1
+	 */
+	final static BigInt ONE = staticValueOf(1);
+	/**
+	 * Static copy of BigInt of 2
+	 */
+	final static BigInt TWO = staticValueOf(2);
+	/**
+	 * Staitc copy of BigInt of 3
+	 */
+	final static BigInt THREE = staticValueOf(3);
 	/**
 	 * This private instance ArrayList {@code #list} will hold the current
 	 * arraylist that the BigInt object is referencing.
@@ -147,15 +165,26 @@ public class BigInt implements BigIntInterface
 	{
 		this.bigIntString = val;
 		this.absBigIntStr = verifySignAndMinLength(val);
-
-		try {
-			if (isInputValid(this.absBigIntStr))
-				storeInArrayList(this.absBigIntStr);
-		} catch (InvalidInputException e) {
-			e.getMessage(); e.printStackTrace();
-			System.exit(-1);
-		}
+		processInput(this.absBigIntStr);
 		LONG_MAX_VAL = MAX_VALUE;
+	}
+
+	/**
+	 * Translates the string using a seperate sign parameter that holds the sign
+	 * of the number. The string val is the absolute value representation of the
+	 * number.
+	 *
+	 * @param signum Sign of the number: -1 is negative, 1 is positive
+	 * @param val - Absolute value of the Number must be provided
+	 */
+	public BigInt(int signum, String val)
+	{
+		if(validSignum(signum)){
+			if(signum == -1)
+				this.isCharged = true;
+			this.absBigIntStr = val;
+			processInput(this.absBigIntStr);
+		}
 	}
 
 	/**
@@ -172,13 +201,7 @@ public class BigInt implements BigIntInterface
 		String path = file.getPath();
 		BigIntFileReader fileContents = new BigIntFileReader(path);
 		String number = fileContents.getContents();
-		try {
-			if(isInputValid(number))
-				storeInArrayList(number);
-		} catch (InvalidInputException e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
+		processInput(number);
 		LONG_MAX_VAL = MAX_VALUE;
 	}
 
@@ -193,6 +216,29 @@ public class BigInt implements BigIntInterface
 	{
 		this.list = numberArray;
 		LONG_MAX_VAL = MAX_VALUE;
+	}
+
+	/**
+	 * Private constructor that initalizes a single digit
+	 * BigiInt that is used throughout the program.
+	 * @param value = Value
+	 */
+	private BigInt(long value)
+	{
+		this.bigIntString = Long.toString(value);
+		this.absBigIntStr = Long.toString(Math.abs(value));
+		this.list = new ArrayList<>();
+		this.list.add((int)value);
+	}
+
+	/**
+	 * Initializes a new BigInt of a single digit BigInt
+	 * @param value = Value
+	 * @return BigInt Object
+	 */
+	private static BigInt staticValueOf(long value)
+	{
+		return new BigInt(value);
 	}
 
 	/**
@@ -212,6 +258,30 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Makes sure that the signum value is either -1 or 1
+ 	 * @param signum Sign
+	 * @return True if it is within range
+	 */
+	private boolean validSignum(int signum)
+	{
+		return signum == 1 || signum == -1;
+	}
+
+	/**
+	 * Process the final approved input and stores it in the arraylist
+	 * that can be used to do operations on it.
+	 * @param val String representation of the number
+	 */
+	private void processInput(String val)
+	{
+		try {
+			if (isInputValid(val))
+				storeInArrayList(val);
+		} catch (InvalidInputException e) {
+			e.getMessage();
+		}
+	}
+	/**
 	 * This method simply looks for a positve or a negative sign in front of the user input
 	 * and initializes the boolean instance variable if the sign is negative.
 	 *
@@ -222,12 +292,14 @@ public class BigInt implements BigIntInterface
 	 */
 	private String verifySignAndMinLength(String value)
 	{
-		char signValue = value.charAt(0);
-		if (value.length() == 1 && !Character.isDigit(value.charAt(0)))
-			System.exit(-1);
-		else if (signValue == '+' || signValue == '-') {
-			setSign(signValue);
-			return value.substring(1);
+		if(value.length()>0) {
+			char signValue = value.charAt(0);
+			if (value.length() == 1 && !Character.isDigit(value.charAt(0)))
+				System.exit(-1);
+			else if (signValue == '+' || signValue == '-') {
+				setSign(signValue);
+				return value.substring(1);
+			}
 		}
 		return value;
 	}
@@ -243,6 +315,8 @@ public class BigInt implements BigIntInterface
 	 */
 	private boolean isInputValid(String value) throws InvalidInputException
 	{
+		if(value.length()==0)
+			throw new InvalidInputException("Empty String");
 		if(!value.matches("^[0-9]+$"))
 			throw new InvalidInputException("Contains invalid Character");
 		return true;
@@ -627,8 +701,8 @@ public class BigInt implements BigIntInterface
 			product = multiplicand.size() < multiplier.size() ?
 					multiplyNaive(multiplier, multiplicand)
 					: multiplyNaive(multiplicand, multiplier);
+			reverse(multiplicand,multiplier,product);
 		}
-		reverse(multiplicand,multiplier,product);
 		return product;
 	}
 
@@ -832,6 +906,7 @@ public class BigInt implements BigIntInterface
 	 *     <tr>
 	 *         <td>-a/-b</td>
 	 *         <td>==</td>
+	 *         <td> c</td>
 	 *</table>
 	 * @param other - BigInt divisor
 	 * @param mod - true if mod value was requested
@@ -1147,8 +1222,8 @@ public class BigInt implements BigIntInterface
 			if(exponent<0) throw new NegativeExponentException("Exponent < 0");
 		}catch (NegativeExponentException e){
 			e.getMessage();
-			e.printStackTrace();
-			System.exit(-1);
+			//e.printStackTrace();
+			//System.exit(-1);
 		}
 	}
 
@@ -1157,7 +1232,7 @@ public class BigInt implements BigIntInterface
 	 * Parameters accepts original arraylist, product arraylist and the current
 	 * exponent value.
 	 *
-	 * The value of the exponent decreses each time the recursive method is called.
+	 * The value of the exponent decreases each time the recursive method is called.
 	 * It functions as a counting value.
 	 *
 	 * Base Case: if(expo==1) return the current product
@@ -1495,10 +1570,6 @@ public class BigInt implements BigIntInterface
 		return this.list.get(this.list.size()-1)%2 == 0;
 	}
 
-	/**
-	 * Finds out if the number is odd
-	 * @return True if it is odd
-	 */
 	public boolean isOdd()
 	{
 		return this.list.get(this.list.size()-1)%2 != 0;

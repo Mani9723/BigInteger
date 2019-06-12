@@ -28,7 +28,7 @@ This class implements the BigInt Interface and needs Katartsuba.java, FileReader
 
 ## Tests
 
-I have provided JUnit4 Test class with 122 test cases that has 100% coverage in the class.
+I have provided JUnit4 Test class with 141 test cases that has 100% coverage in the class.
 
 ## Exceptions
 

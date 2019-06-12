@@ -259,7 +259,7 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * Makes sure that the signum value is either -1 or 1
- 	 * @param signum Sign
+	 * @param signum Sign
 	 * @return True if it is within range
 	 */
 	private boolean validSignum(int signum)
@@ -1304,6 +1304,34 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Calculates the Greatest common divisor of two BigIntegers.
+	 * This uses the Euclidean Algorithm to find the GCD
+	 *
+	 * @param other Second BigInt
+	 * @return GCD
+	 */
+	public BigInt gcd(BigInt other)
+	{
+		int compareResult = this.compareTo(other);
+		if (compareResult == 0) return this;
+		if (compareResult == -1) return computeGcd(other,this);
+		else return computeGcd(this,other);
+	}
+
+	/**
+	 * Recursively finds the GCD
+	 * @param m First Value
+	 * @param n Second Value
+	 * @return GCD
+	 */
+	private BigInt computeGcd(BigInt m, BigInt n)
+	{
+		BigInt r;
+		r = m.mod(n);
+		return r.compareTo(ZERO) == 0 ? n : computeGcd(n,r);
+	}
+
+	/**
 	 * Shifts the BigInteger to specified value based on
 	 * powers of two.
 	 * @param n Shift value
@@ -1603,17 +1631,21 @@ public class BigInt implements BigIntInterface
 	}
 
 	/**
+	 * Finds out the parity of the number
+	 * @return 0 if Even, 1 if Odd
+	 */
+	public int parity()
+	{
+		return isEven() ? 0 : 1;
+	}
+
+	/**
 	 * Finds out if the number is even
 	 * @return True if it is even
 	 */
-	public boolean isEven()
+	private boolean isEven()
 	{
 		return this.list.get(this.list.size()-1)%2 == 0;
-	}
-
-	public boolean isOdd()
-	{
-		return this.list.get(this.list.size()-1)%2 != 0;
 	}
 
 	/**

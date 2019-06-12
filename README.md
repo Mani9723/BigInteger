@@ -10,6 +10,9 @@ The following methods are are public and provided in this class:
 - Integer Divison
 - Modulus
 - Exponentiate
+- Logical Left shift
+- Logical Right shift
+- Parity
 - Absolute Value
 - Minimum
 - Maximum

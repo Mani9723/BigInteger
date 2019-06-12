@@ -13,6 +13,7 @@ The following methods are are public and provided in this class:
 - Logical Left shift
 - Logical Right shift
 - Parity
+- Greatest Common Divisor
 - Absolute Value
 - Minimum
 - Maximum

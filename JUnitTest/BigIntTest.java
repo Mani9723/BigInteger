@@ -2011,4 +2011,38 @@ public class BigIntTest
 		assertEquals("6666666666666",b1.absValue().toString());
 	}
 
+	@Test
+	public void testShiftLeft()
+	{
+		b1 = new BigInt("76");
+		assertEquals("152",b1.shiftLeft(1).toString());
+	}
+
+	@Test
+	public void testShiftLeft1()
+	{
+		b1 = new BigInt("76");
+		assertEquals("304",b1.shiftLeft(2).toString());
+	}
+
+	@Test
+	public void testShiftLeft2()
+	{
+		b1 = new BigInt("76");
+		assertEquals("608",b1.shiftLeft(3).toString());
+	}
+
+	@Test
+	public void testShiftRight()
+	{
+		b1 = new BigInt("152");
+		assertEquals("76",b1.shiftRight(1).toString());
+	}
+
+	@Test
+	public void testShiftRight1()
+	{
+		b1 = new BigInt("608");
+		assertEquals("76",b1.shiftRight(3).toString());
+	}
 }

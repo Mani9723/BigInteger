@@ -214,7 +214,7 @@ public class BigInt implements BigIntInterface
 	 */
 	private BigInt(ArrayList<Integer> numberArray)
 	{
-		this.list = numberArray;
+		this.list = new ArrayList<>(numberArray);
 		LONG_MAX_VAL = MAX_VALUE;
 	}
 
@@ -1300,6 +1300,47 @@ public class BigInt implements BigIntInterface
 			firstResult = new ArrayList<>(recursiveExpo(org,org,2).list);
 			result = new ArrayList<>(recursiveExpo(firstResult,firstResult,expo>>>1).list);
 			return new BigInt(result);
+		}
+	}
+
+	/**
+	 * Shifts the BigInteger to specified value based on
+	 * powers of two.
+	 * @param n Shift value
+	 * @return Shifted Value
+	 */
+	public BigInt shiftLeft(int n)
+	{
+		validateShiftValue(n);
+		BigInt b1 = new BigInt((long)1<<n);
+		return multiply(b1);
+	}
+
+	/**
+	 * Logically shift the BigInt to the right.
+	 * Uses Powers of 2
+	 * @param n Shift Value
+	 * @return Shifted Value
+	 */
+	public BigInt shiftRight(int n)
+	{
+		validateShiftValue(n);
+		BigInt b1 = new BigInt((long)1<<n);
+		return divideBy(b1);
+	}
+
+	/**
+	 * Validates the Shift value. Has to be positive
+	 * @param n Test Value
+	 */
+	private void validateShiftValue(int n)
+	{
+		if(n < 0){
+			try {
+				throw new InvalidInputException("Shift Value must be positive");
+			} catch (InvalidInputException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

@@ -1973,26 +1973,26 @@ public class BigIntTest
 	public void testOdd()
 	{
 		b1 = new BigInt("284355128375487123547612347860237845876235487");
-		assertTrue(b1.isOdd());
+		assertEquals(1,b1.parity());
 	}
 	@Test
 	public void testEven()
 	{
 		b1 = new BigInt("28435512837548712354761234786023784587623548");
-		assertTrue(b1.isEven());
+		assertEquals(0,b1.parity());
 	}
 
 	@Test
 	public void testOdd1()
 	{
 		b1 = new BigInt("-284355128375487123547612347860237845876235487");
-		assertTrue(b1.isOdd());
+		assertEquals(1,b1.parity());
 	}
 	@Test
 	public void testEven1()
 	{
 		b1 = new BigInt("-28435512837548712354761234786023784587623548");
-		assertTrue(b1.isEven());
+		assertEquals(0,b1.parity());
 	}
 
 	@Test
@@ -2044,5 +2044,14 @@ public class BigIntTest
 	{
 		b1 = new BigInt("608");
 		assertEquals("76",b1.shiftRight(3).toString());
+	}
+
+	@Test
+	public void testGcd()
+	{
+		b1 = new BigInt("119");
+		b2 = new BigInt("544");
+		b3 = b1.gcd(b2);
+		assertEquals("17",b3.toString());
 	}
 }

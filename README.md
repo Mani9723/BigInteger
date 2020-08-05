@@ -8,6 +8,7 @@ The following methods are are public and provided in this class:
 - Subtract
 - Multiply
 - Integer Divison
+- DivideAndRemainder
 - Modulus
 - Exponentiate
 - Logical Left shift
@@ -20,7 +21,6 @@ The following methods are are public and provided in this class:
 - Equals
 - Length
 - Comparison
-- toString
 
 
 ## Tests

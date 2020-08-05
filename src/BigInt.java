@@ -937,49 +937,6 @@ public class BigInt implements BigIntInterface
 		if(other.isCharged)
 			other.list = new ArrayList<>(negate(other.list));
 	}
-//	/**
-//	 * The goal is to handle cases where the dividend is less than the divisor.
-//	 * Since this is integer division, the result will be 0 so this will
-//	 * first negate any negative arraylists then compare the two arrayLists.
-//	 * If the this.list is less than other.list then the return
-//	 * String will be 0. That result will be passed through the {@link #BigInt(String)}
-//	 * constructor that accepts string arguments.
-//	 *
-//	 * @param other - BigInt object
-//	 * @return - "0" if true or "-1" if false
-//	 */
-//	private String handleZeroResult(BigInt other)
-//	{
-//		return other.toString();
-//	}
-
-//	/**
-//	 * Handles division cases where either or both (this or other) is negative
-//	 * For example:
-//	 * <table border = "1" cellPadding = "1">
-//	 *     <tr>
-//	 *         <td>a/-b</td>
-//	 *         <td>==</td>
-//	 *         <td>-c</td>
-//	 *     </tr>
-//	 *     <tr>
-//	 *         <td>-a/b</td>
-//	 *         <td>==</td>
-//	 *         <td>-c</td>
-//	 *     </tr>
-//	 *     <tr>
-//	 *         <td>-a/-b</td>
-//	 *         <td>==</td>
-//	 *         <td>c</td>
-//	 *     </tr>
-//	 * </table>
-//	 * @param other - BigInt other
-//	 * @return +-a/+-b as an {@code ArrayList<Integer>}
-//	 */
-//	private ArrayList<Integer> handleNegDivCases(BigInt other)
-//	{
-//		return new ArrayList<>();
-//	}
 
 	/**
 	 * The division algorithm.

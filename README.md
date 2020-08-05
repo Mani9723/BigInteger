@@ -22,9 +22,6 @@ The following methods are are public and provided in this class:
 - Comparison
 - toString
 
-## Dependencies
-
-This class implements the BigInt Interface and needs Katartsuba.java, FileReader.java, Exception Classes.
 
 ## Tests
 

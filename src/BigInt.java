@@ -6,6 +6,7 @@ import FileReader.BigIntFileReader;
 import java.io.File;
 import java.lang.Math;
 import java.lang.StringBuilder;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -817,7 +818,6 @@ public class BigInt implements BigIntInterface
 	 * This takes case of cases where no division is required
 	 * such as a/1 == a, if {@code a < b} == 0 since its integer division.
 	 *
-	 * Calls {@link #handleDivCases(BigInt,boolean)} that handles all cases
 	 *
 	 * @param other BigInt object - divisor
 	 * @return this/other
@@ -829,6 +829,23 @@ public class BigInt implements BigIntInterface
 		if(isOneNegative(other) && (quotient.list.get(0) != 0))
 			quotient.isCharged = true;
 		return quotient;
+	}
+
+	/**
+	 * Combines {@link #divideBy(BigInt)} and {@link #mod(BigInt)} methods and returns
+	 * both the quotient and the remainder of the division operation
+	 * @param other Divisor
+	 * @return BigInt[]
+	 */
+	public BigInt[] divideAndRemainder(BigInt other)
+	{
+		validateDivisor(other);
+		BigInt[] results = handleDivCases(other);
+		if(isOneNegative(other) && (results[0].list.get(0) != 0))
+			results[0].isCharged = true;
+		if(isOneNegative(other))
+			results[1].isCharged = true;
+		return results;
 	}
 
 	/**
@@ -912,17 +929,48 @@ public class BigInt implements BigIntInterface
 	 * @param mod - true if mod value was requested
 	 * @return BigInt Object representing quotient
 	 */
-	@SuppressWarnings("EqualsBetweenInconvertibleTypes")
 	private BigInt handleDivCases(BigInt other, boolean mod)
 	{
 		makeAbs(other);
-		if(this.equals(0)) return new BigInt("0");
+		if(this.equals(BigInt.ZERO)) return BigInt.ZERO;
 		else if(this.list.equals(other.list))
-			return mod ? new BigInt("0") : new BigInt("1");
+			return mod ? BigInt.ZERO : BigInt.ONE;
 		else if(isLessThan(this.list,other.list) == -1)
-			return mod ? new BigInt(this.list) : new BigInt("0");
-		else
-			return new BigInt(divideAlgo(this.list,other.list,mod));
+			return mod ? this : BigInt.ZERO;
+		else {
+			return mod ? new BigInt(divideAlgo(this.list, other.list).get(1)) :
+					new BigInt(divideAlgo(this.list, other.list).get(0));
+		}
+	}
+
+	/**
+	 * Overloaded version of {@link #handleDivCases(BigInt, boolean)}
+	 * that takes care of the {@link #divideAndRemainder(BigInt)} method
+	 *
+	 * @param other BigInt divisor
+	 * @return BigInt[] containing the quotient and the remainder
+	 */
+	private BigInt[] handleDivCases(BigInt other)
+	{
+		makeAbs(other);
+		BigInt[] results = new BigInt[2];
+		if(this.equals(BigInt.ZERO)) {
+			results[0] = BigInt.ZERO;
+			results[1] = BigInt.ZERO;
+		}
+		else if(this.list.equals(other.list)) {
+			results[0] = BigInt.ONE;
+			results[1] = BigInt.ZERO;
+		}
+		else if(isLessThan(this.list,other.list) == -1) {
+			results[0] = BigInt.ZERO;
+			results[1] = this;
+		}else{
+			ArrayList<ArrayList<Integer>> answer = divideAlgo(this.list,other.list);
+			results[0] = new BigInt(answer.get(0));
+			results[1] = new BigInt(answer.get(1));
+		}
+		return results;
 	}
 
 	/**
@@ -990,11 +1038,10 @@ public class BigInt implements BigIntInterface
 	 *
 	 * @param dividend - Dividend
 	 * @param divisor - Divisor
-	 * @param mod - true if modulus was requested
+	 * //@param mod - true if modulus was requested
 	 * @return quotient - ArrayList
 	 */
-	private ArrayList<Integer> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor,
-	                                      boolean mod)
+	private ArrayList<ArrayList<Integer>> divideAlgo(ArrayList<Integer> dividend, ArrayList<Integer> divisor)
 	{
 		LinkedHashMap<Integer,ArrayList<Integer>> table = new LinkedHashMap<>(storeProductLHMap(divisor));
 
@@ -1019,7 +1066,10 @@ public class BigInt implements BigIntInterface
 				currDividend.add(dividend.get(currIndexOrgDividend));
 			}
 		}
-		return mod ? currDividend : quotient;
+		ArrayList<ArrayList<Integer>> results = new ArrayList<>(2);
+		results.add(quotient);
+		results.add(currDividend);
+		return results;
 	}
 
 	/**

@@ -1190,7 +1190,6 @@ public class BigInt implements BigIntInterface
 				: multiplyNaive(lists[0],lists[1]);
 		//karatsuba.toAList(karatsuba.multiply(toStrArrList(lists[0]), toStrArrList(lists[1]),10));
 	}
-
 	/**
 	 * Calculates BigInt <tt>(this<sup>exponent</sup>)</tt>
 	 * The exponent is of type int rather than a BigInt because
@@ -1210,10 +1209,31 @@ public class BigInt implements BigIntInterface
 		BigInt expoResult;
 		if(exponent == 1) expoResult = this;
 		else {
-			expoResult = new BigInt(expoBySquaring(this.absBigIntStr,exponent),true);
+			expoResult = new BigInt(expoBySquaring(this.absBigIntStr,(long)exponent),true);
 		}
 		return expoResult;
 	}
+
+	/**
+	 * Calculates the value of (this^expo)%m
+	 *
+	 * AS OF NOW ONLY IS ABLE TO CALCULATE EXPONENTS THAT IS LESS THAN
+	 * THE LONG.MAX VALUE
+	 *
+	 * @param exponent BigInt <= Long.MAX_VALUE
+	 * @param m BigInt
+	 * @return BigInt
+	 */
+	public BigInt modPow(BigInt exponent, BigInt m)
+	{
+		BigInt expoResult, finalResult = null;
+		if(exponent.isWithinLong()){
+			expoResult = new BigInt(expoBySquaring(this.absBigIntStr,exponent.toLong()),true);
+			finalResult = expoResult.mod(m);
+		}
+		return finalResult;
+	}
+
 
 	/**
 	 * Since this is a BigInteger class and not a BigDecimal class,
@@ -1270,7 +1290,7 @@ public class BigInt implements BigIntInterface
 	 * @param bigIntString - string
 	 * @return BigInt - expo
 	 */
-	private String expoBySquaring(String bigIntString,int expo)
+	private String expoBySquaring(String bigIntString,long expo)
 	{
 		Karatsuba karatsuba = new Karatsuba();
 		if(expo == 0)
@@ -1293,7 +1313,7 @@ public class BigInt implements BigIntInterface
 	 * @return result
 	 */
 	@Deprecated
-	@SuppressWarnings("unused")
+	@SuppressWarnings({"unused", "IfStatementWithIdenticalBranches"})
 	private BigInt expoAddition(ArrayList<Integer> org, int expo)
 	{
 		int secondPow = (expo-1) >>> 1;
@@ -1552,7 +1572,7 @@ public class BigInt implements BigIntInterface
 	 * @param second -ArrayList
 	 * @return 1 or -1
 	 */
-	private int compareBasedOnLengthArrayList(ArrayList first, ArrayList second)
+	private int compareBasedOnLengthArrayList(ArrayList<Integer> first, ArrayList<Integer> second)
 	{
 		return first.size()>second.size()? 1 : -1;
 	}
@@ -1624,17 +1644,22 @@ public class BigInt implements BigIntInterface
 
 	/**
 	 * Checks to see id the object fits in a Long data type
-	 * @param other - BigInt
 	 * @return true if it fits
 	 */
-	//@Deprecated
-	@SuppressWarnings("unused")
-	private boolean isWithinLong(BigInt other)
+	public boolean isWithinLong()
 	{
-		int posLongLen = Long.toString(LONG_MAX_VAL).length();
-		if(this.absBigIntStr.length() > posLongLen || other.absBigIntStr.length() > posLongLen)
-			return false;
-		else return this.absBigIntStr.charAt(1) <= 2 && other.absBigIntStr.charAt(1) <= 2;
+		BigInt longBigInt = new BigInt(Long.toString(MAX_VALUE));
+		int result = this.compareTo(longBigInt);
+		return result <= 0;
+	}
+
+	/**
+	 * Converts BigInt to Long
+	 * @return Long
+	 */
+	private long toLong()
+	{
+		return Long.parseLong(this.absBigIntStr);
 	}
 
 	/**

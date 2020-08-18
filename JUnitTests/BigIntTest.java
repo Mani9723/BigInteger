@@ -2216,4 +2216,20 @@ public class BigIntTest
 	}
 
 
+	@Test
+	public void testWithinLing()
+	{
+		b1 = new BigInt("123456789");
+		System.out.println(b1.isWithinLong());
+	}
+
+	@Test
+	public void testModPow()
+	{
+		b1 = new BigInt("11");
+		b2 = new BigInt("13");
+		b3 = new BigInt("19");
+		System.out.println(b1.modPow(b2,b3).toString());
+	}
+
 }

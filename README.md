@@ -11,6 +11,7 @@ The following methods are are public and provided in this class:
 - DivideAndRemainder
 - Modulus
 - Exponentiate
+- Modular Exponentiation
 - Logical Left shift
 - Logical Right shift
 - Parity

@@ -22,11 +22,12 @@ The following methods are are public and provided in this class:
 - Equals
 - Length
 - Comparison
+- More...
 
 
 ## Tests
 
-I have provided JUnit4 Test class with 141 test cases that has 100% coverage in the class.
+I have provided JUnit4 Test class with 141+ test cases that has 100% coverage in the class.
 
 ## Exceptions
 
